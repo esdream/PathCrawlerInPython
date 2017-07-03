@@ -7,10 +7,11 @@ Crawl the cities from offical website of State Statistics Bureau.
 Parse the html and save the city as json file in citydataset.json.
 """
 
+import urllib2
 import json
 import re
 from bs4 import BeautifulSoup
-import requests
+
 
 # 从国家统计局官网抓取县及县以上行政区划代码
 def city_crawler():
@@ -23,10 +24,9 @@ def city_crawler():
             'Accept': 'application/json, text/javascript, */*; q=0.01',
             'X-Requested-With': 'XMLHttpRequest'
         }
-        response = requests.get(url, headers=sendHeaders)
-        # requests中默认的编码方式是'ISO-8859-1'，需要修改为utf-8
-        response.encoding = 'utf-8'
-        htmlDoc = response.text
+        request = urllib2.Request(url, headers = sendHeaders)
+        response = urllib2.urlopen(request)
+        htmlDoc = response.read()
         html = BeautifulSoup(htmlDoc, 'lxml')
 
         # 获得县及以上行政区名称与行政区划代码
@@ -35,7 +35,7 @@ def city_crawler():
 
         for i in range(spanNum):
             # 除去文本中的空白字符，这一步是将保存下来的文本中的空白字符复制为strip函数的参数
-            spanText = allSpanContents[i].get_text().strip('　  ')
+            spanText = allSpanContents[i].get_text().encode('utf-8').strip('　  ')
             # 除去空白字符后，若非空，则为行政区划代码或名称，写入cityText.txt
             if(spanText):
                 f.write(spanText + '\n')
@@ -94,5 +94,5 @@ def dataToJson():
         f.write(data)
 
 if(__name__ == '__main__'):
-    city_crawler()
+    # city_crawler()
     dataToJson()
