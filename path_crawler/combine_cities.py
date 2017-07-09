@@ -68,8 +68,10 @@ class CombineCity(object):
             city_data = json.loads(city_data_json.read())
 
             for (provincial_level_region, city_list) in city_data.items():
-                if(provincial_level_region in ['北京市', '上海市', '天津市', '香港特别行政区', '澳门特别行政区', '台湾省']):
+                if(provincial_level_region in ['北京市', '上海市', '天津市']):
                     prefecture_level_city_list.append(provincial_level_region)
+                    continue
+                if(provincial_level_region in ['香港特别行政区', '澳门特别行政区', '台湾省']):
                     continue
                 prefecture_level_city_list.extend(city_list['prefecture_level_city'])
                 county_level_city_list.extend(city_list['county_level_city'])
@@ -85,13 +87,9 @@ class CombineCity(object):
         self.init_database()
         prefecture_level_city_list, county_level_city_list = self.city_data_parser()
 
-        try:
-            db_name = '{}.db'.format(self._city_filename)
-            db_file = os.path.join(os.path.dirname(__file__), db_name)
-            connection_of_citydb = sqlite3.connect(db_file)
-        except IOError as no_db_error:
-            print('The city database is not existed!')
-            print(no_db_error)
+        db_name = '{}.db'.format(self._city_filename)
+        db_file = os.path.join(os.path.dirname(__file__), db_name)
+        connection_of_citydb = sqlite3.connect(db_file)
 
         with connection_of_citydb:
             cur = connection_of_citydb.cursor()
