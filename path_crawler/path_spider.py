@@ -108,11 +108,11 @@ class ParserThread(threading.Thread):
     Parse the path data crawled from Baidu Map.
     """
 
-    def __init__(self, thread_id, path_queue, cursor):
+    def __init__(self, thread_id, path_queue, db_name):
         threading.Thread.__init__(self)
         self._thread_id = thread_id
         self._path_queue = path_queue
-        self._cursor = cursor
+        self._db_name = db_name
 
     def run(self):
         print('No.{} crawler start...'.format(self._thread_id))
@@ -126,53 +126,49 @@ class ParserThread(threading.Thread):
         Parse the data from Baidu Map.
         """
 
-        global PARSER_EXIT_FLAG
-        while not PARSER_EXIT_FLAG:
-            try:
-                path_info = self._path_queue.get(True, 20)
-                result = {}
-                result['id'] = path_info['city_com_num']
-                result['origin'] = path_info['origin']
-                result['destination'] = path_info['destination']
-                result['driving_duration'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
-                result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
+        path_data_db = sqlite3.connect(self._db_name)
+        with path_data_db:
 
-                num_of_steps = len(path_info['path_json'][u'result'][u'routes'][0][u'steps'])
-                path_string = ''
-                for i in range(num_of_steps):
-                    if(i == num_of_steps - 1):
-                        path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
-                        break
-                    path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(';')
-                    path_string += ";".join(path_list[0:-1]) + ';'
-                result['path'] = path_string
+            cursor = path_data_db.cursor()
 
-                print('From:{} to {}, duration: {}, distance: {}'.format(result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
+            global PARSER_EXIT_FLAG
+            while not PARSER_EXIT_FLAG:
+                try:
+                    path_info = self._path_queue.get(True, 20)
 
-                self.__data_saver(result)
+                    result = {}
+                    result['id'] = path_info['city_com_num']
+                    result['origin'] = path_info['origin']
+                    result['destination'] = path_info['destination']
+                    result['driving_duration'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
+                    result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
 
-            except Exception as parser_error:
-                # print('Parse path {} failed!'.format(path_info['city_com_num']))
-                print(parser_error)
+                    num_of_steps = len(path_info['path_json'][u'result'][u'routes'][0][u'steps'])
+                    path_string = ''
+                    for i in range(num_of_steps):
+                        if(i == num_of_steps - 1):
+                            path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
+                            break
+                        path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(';')
+                        path_string += ";".join(path_list[0:-1]) + ';'
+                    result['path'] = path_string
 
+                    print('From:{} to {}, duration: {}, distance: {}'.format(result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
 
-    # 存储解析数据
-    def __data_saver(self, result):
-        """Data saver.
+                    cursor.execute('insert into path_data values (?,?,?,?,?,?)', (result['id'], result['origin'], result['destination'], result['driving_duration'], result['distance_km'], result['path']))
 
-        Save the parsed data in database
-        """
+                    path_data_db.commit()
 
-        # TODO(conquerfu@gmail.com): 给这里的数据库加锁
-        cursor = self._cursor()
-        cursor.execute('insert into path_data values (?,?,?,?,?,?)', (result['id'], result['origin'], result['destination'], result['driving_duration'], result['distance_km'], result['path']))
+                    self._path_queue.task_done()
 
+                except Exception as parser_error:
+                    # print('Parse path {} failed!'.format(path_info['city_com_num']))
+                    print(parser_error)
 
 
 CITY_COMS_QUEUE = queue.Queue()
 PATH_QUEUE = queue.Queue()
 PARSER_EXIT_FLAG = False
-
 
 def main():
     """
@@ -181,50 +177,48 @@ def main():
     data_reader = CityCombinationsReader('city_dataset_test', CITY_COMS_QUEUE)
     data_reader.read_data()
 
-    path_data_db = sqlite3.connect('path_data.db')
-
+    path_db_name = 'path_data.db'
+    os.remove('path_data.db')
+    path_data_db = sqlite3.connect(path_db_name)
     with path_data_db:
-
         cursor = path_data_db.cursor()
-        cursor.execute('create table path_data(id int primary key, origin_city varchar(20), destination_city varchar(20), duration double, distance double, path varchar(255))')
+        try:
+            cursor.execute('create table path_data(id int primary key, origin_city varchar(20), destination_city varchar(20), duration double, distance double, path varchar(255))')
+        except Exception as create_db_error:
+            print('create database error: {}'.format(create_db_error))
 
-        crawler_threads = []
-        crawler_list = ['crawl_thread1', 'crawl_thread2', 'crawl_thread3']
+    crawler_threads = []
+    crawler_list = ['crawl_thread' + str(num) for num in range(10)]
 
-        for crawler_thread_id in crawler_list:
-            crawler_thread = PathCrawlerThread(crawler_thread_id, CITY_COMS_QUEUE, PATH_QUEUE)
-            crawler_thread.start()
-            crawler_threads.append(crawler_thread)
+    for crawler_thread_id in crawler_list:
+        crawler_thread = PathCrawlerThread(crawler_thread_id, CITY_COMS_QUEUE, PATH_QUEUE)
+        crawler_thread.start()
+        crawler_threads.append(crawler_thread)
 
-        parser_threads = []
-        parser_list = ['parse_thread1', 'parse_thread2', 'parse_thread3']
+    parser_thread_id = 'parser_thread'
+    parser_thread = ParserThread(parser_thread_id, PATH_QUEUE, path_db_name)
+    parser_thread.start()
 
-        for parser_thread_id in parser_list:
-            parser_thread = ParserThread(parser_thread_id, PATH_QUEUE, cursor)
-            parser_thread.start()
-            parser_threads.append(parser_thread)
+    # 等待城市组合队列清空
+    while not CITY_COMS_QUEUE.empty():
+        pass
 
-        # 等待城市组合队列清空
-        while not CITY_COMS_QUEUE.empty():
-            pass
+    # 等待所有抓取线程完成
+    for crawler_thread in crawler_threads:
+        crawler_thread.join()
 
-        # 等待所有抓取线程完成
-        for crawler_thread in crawler_threads:
-            crawler_thread.join()
+    # 等待路径json队列清空
+    while not PATH_QUEUE.empty():
+        pass
 
-        # 等待路径json队列清空
-        while not PATH_QUEUE.empty():
-            pass
+    # 当所有队列清空后，将解析线程退出标记置为True，通知其退出
+    global PARSER_EXIT_FLAG
+    PARSER_EXIT_FLAG = True
 
-        # 等待所有解析线程完成
-        for parser_thread in parser_threads:
-            parser_thread.join()
+    # 等待解析线程完成
+    parser_thread.join()
 
-        # 当所有队列清空后，将解析线程退出标记置为True，通知其推出
-        global PARSER_EXIT_FLAG
-        PARSER_EXIT_FLAG = True
-
-        print('Exiting Main Thread')
+    print('Exiting Main Thread')
 
 if(__name__ == '__main__'):
     main()

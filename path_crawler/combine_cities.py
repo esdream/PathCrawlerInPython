@@ -109,40 +109,6 @@ class CombineCity(object):
                     count_id += 1
 
 
-# 根据url抓取坐标并匹配
-# def getCoord(url):
-#     pass
-#
-# def fromCityNameToCoord(fileName):
-#     cityNameList = readCityName(fileName)
-#     cityCoord = []  # 这里使用dict还是list？需要考虑存储复杂度和数据格式问题。可以使用List，每个城市与其经纬度是一个tuple
-#     for cityName in cityNameList:
-#         # 字符串拼接成url
-#         # 发送至百度地图Geocoding API, 将城市名转化为经纬度
-#         # 这里注意发送频次，需要设置并发上限
-#         result = getCoord(url)
-#         cityCoord.append(result)
-#         pass
-#
-#     for originCity in cityCoord:
-#         for destinationCity in cityCoord:
-#             # 组合起点城市和终点城市，并持久化为数据库/文本文件
-#             pass
-#
-# # 读取数据库中的组合
-# def readComOfCity(dataBaseOfComOfCity):
-#     pass
-#
-# # 根据url获得路径和时间
-# def getPathAndTime(url):
-#     pass
-#
-# def crawPathAndTime(data, param):
-#     # 管道读取？
-#     comOfCity = readCityCom(data)
-#     # 将组合转化为url，发送至百度地图Direction API，获得路径和时间
-#     # 并发访问？
-#     # 结果处理和持久化
 #
 # # 设置参数并爬取路径和时间
 # def pathCrawler():
