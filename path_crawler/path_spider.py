@@ -61,11 +61,13 @@ class PathCrawlerThread(threading.Thread):
     Crawl the path using Baidu Map direction API.
     """
 
-    def __init__(self, thread_id, city_com_queue, path_queue):
+    def __init__(self, **crawler_args):
         threading.Thread.__init__(self)
-        self._thread_id = thread_id
-        self._city_com_queue = city_com_queue
-        self._path_queue = path_queue
+        self._thread_id = crawler_args['thread_id']
+        self._city_com_queue = crawler_args['city_com_queue']
+        self._path_queue = crawler_args['path_queue']
+        self._error_file = crawler_args['error_file']
+        self._error_lock = crawler_args['error_lock']
 
     def run(self):
         print('No.{} crawler start...'.format(self._thread_id))
@@ -98,8 +100,11 @@ class PathCrawlerThread(threading.Thread):
                         self._path_queue.put(path_info)
                         break
                     except Exception as crawl_error:
-                        print('Crawl path {0[0]} failed!'.format(city_coms_data))
-                        print(crawl_error)
+                        with self._error_lock:
+                            self._error_file.write('{0}\t{1}\t{2}\n'.format(city_coms_data[0], city_coms_data[1], city_coms_data[2]))
+                            print('Crawl path {0[0]} failed!'.format(city_coms_data))
+                            print(crawl_error)
+
 
 # 解析线程
 class ParserThread(threading.Thread):
@@ -108,11 +113,13 @@ class ParserThread(threading.Thread):
     Parse the path data crawled from Baidu Map.
     """
 
-    def __init__(self, thread_id, path_queue, db_name):
+    def __init__(self, **parser_args):
         threading.Thread.__init__(self)
-        self._thread_id = thread_id
-        self._path_queue = path_queue
-        self._db_name = db_name
+        self._thread_id = parser_args['thread_id']
+        self._path_queue = parser_args['path_queue']
+        self._db_name = parser_args['db_name']
+        self._error_file = parser_args['error_file']
+        self._error_lock = parser_args['error_lock']
 
     def run(self):
         print('No.{} crawler start...'.format(self._thread_id))
@@ -162,13 +169,17 @@ class ParserThread(threading.Thread):
                     self._path_queue.task_done()
 
                 except Exception as parser_error:
-                    # print('Parse path {} failed!'.format(path_info['city_com_num']))
-                    print(parser_error)
+                    with self._error_lock:
+                        self._error_file.write('{0}\t{1}\t{2}\n'.format(path_info['city_com_num'], path_info['origin'], path_info['destination']))
+                        print('Parse path {} failed!'.format(path_info['city_com_num']))
+                        print(parser_error)
 
 
 CITY_COMS_QUEUE = queue.Queue()
 PATH_QUEUE = queue.Queue()
 PARSER_EXIT_FLAG = False
+ERROR_LOCK = threading.Lock()
+
 
 def main():
     """
@@ -178,7 +189,11 @@ def main():
     data_reader.read_data()
 
     path_db_name = 'path_data.db'
-    os.remove('path_data.db')
+
+    #TODO:生产环境下要去掉这一句
+    if(os.path.isfile('path_data.db')):
+        os.remove('path_data.db')
+
     path_data_db = sqlite3.connect(path_db_name)
     with path_data_db:
         cursor = path_data_db.cursor()
@@ -187,38 +202,45 @@ def main():
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
 
-    crawler_threads = []
-    crawler_list = ['crawl_thread' + str(num) for num in range(10)]
+    #TODO:生产环境下要去掉这一句
+    if(os.path.isfile('error.txt')):
+        os.remove('error.txt')
 
-    for crawler_thread_id in crawler_list:
-        crawler_thread = PathCrawlerThread(crawler_thread_id, CITY_COMS_QUEUE, PATH_QUEUE)
-        crawler_thread.start()
-        crawler_threads.append(crawler_thread)
+    with open('error.txt', 'a') as error_file:
+        crawler_threads = []
+        crawler_list = ['crawl_thread' + str(num) for num in range(10)]
 
-    parser_thread_id = 'parser_thread'
-    parser_thread = ParserThread(parser_thread_id, PATH_QUEUE, path_db_name)
-    parser_thread.start()
+        for crawler_thread_id in crawler_list:
+            crawler_thread = PathCrawlerThread(thread_id=crawler_thread_id, city_com_queue=CITY_COMS_QUEUE, path_queue=PATH_QUEUE, error_file=error_file, error_lock=ERROR_LOCK)
+            crawler_thread.start()
+            crawler_threads.append(crawler_thread)
 
-    # 等待城市组合队列清空
-    while not CITY_COMS_QUEUE.empty():
-        pass
+        parser_thread_id = 'parser_thread'
+        parser_thread = ParserThread(thread_id=parser_thread_id, path_queue=PATH_QUEUE, db_name=path_db_name, error_file=error_file, error_lock=ERROR_LOCK)
+        parser_thread.start()
 
-    # 等待所有抓取线程完成
-    for crawler_thread in crawler_threads:
-        crawler_thread.join()
+        # 等待城市组合队列清空
+        while not CITY_COMS_QUEUE.empty():
+            pass
 
-    # 等待路径json队列清空
-    while not PATH_QUEUE.empty():
-        pass
+        # 等待所有抓取线程完成
+        for crawler_thread in crawler_threads:
+            crawler_thread.join()
 
-    # 当所有队列清空后，将解析线程退出标记置为True，通知其退出
-    global PARSER_EXIT_FLAG
-    PARSER_EXIT_FLAG = True
+        # 等待路径json队列清空
+        while not PATH_QUEUE.empty():
+            pass
 
-    # 等待解析线程完成
-    parser_thread.join()
+        # 当所有队列清空后，将解析线程退出标记置为True，通知其退出
+        global PARSER_EXIT_FLAG
+        PARSER_EXIT_FLAG = True
 
-    print('Exiting Main Thread')
+        # 等待解析线程完成
+        parser_thread.join()
+
+        print('Exiting Main Thread')
+        with ERROR_LOCK:
+            error_file.close()
 
 if(__name__ == '__main__'):
     main()
