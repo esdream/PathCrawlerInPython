@@ -102,9 +102,7 @@ class CombineCity(object):
 
             len_of_pre_city = len(prefecture_level_city_list)
             for i in range(len_of_pre_city):
-                for j in range(len_of_pre_city):
-                    if(i == j):
-                        continue
+                for j in range(i + 1, len_of_pre_city):
                     cur.execute('insert into city_combination values (?,?,?)', (count_id, prefecture_level_city_list[i], prefecture_level_city_list[j]))
                     count_id += 1
 
