@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
+# _*_ coding: utf-8 _*_
 # !/usr/bin/python
 
+import time
 import requests
 import json
 
@@ -35,5 +36,13 @@ def dataStructured(response):
 
 url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin=青岛市&destination=临清市&origin_region=青岛市&destination_region=临清市&output=json&ak=YtsG0tZOwjVgDkcLZDuEiSL2PbKzP9HG'
 
-response = requests.get(url).json()
-dataStructured(response)
+time_collection = []
+for i in range(50):
+    start = time.time()
+    response = requests.get(url).json()
+    end = time.time()
+    time_collection.append(end - start)
+
+print("average time:{}".format(sum(time_collection) / 50))
+
+# dataStructured(response)

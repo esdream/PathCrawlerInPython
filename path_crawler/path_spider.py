@@ -6,6 +6,7 @@ Crawl the path using Baidu Map direction API.
 """
 
 import os
+import time
 import threading
 import sqlite3
 import queue
@@ -96,7 +97,7 @@ class PathCrawlerThread(threading.Thread):
                         path_info['city_com_num'] = city_coms_data[0]
                         path_info['origin'] = city_coms_data[1]
                         path_info['destination'] = city_coms_data[2]
-                        path_info['path_json'] = requests.get(url).json()
+                        path_info['path_json'] = requests.get(url, timeout=10).json()
                         self._path_queue.put(path_info)
                         break
                     except Exception as crawl_error:
@@ -140,33 +141,40 @@ class ParserThread(threading.Thread):
 
             global PARSER_EXIT_FLAG
             while not PARSER_EXIT_FLAG:
+
                 try:
                     path_info = self._path_queue.get(True, 20)
 
-                    result = {}
-                    result['id'] = path_info['city_com_num']
-                    result['origin'] = path_info['origin']
-                    result['destination'] = path_info['destination']
-                    result['driving_duration'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
-                    result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
+                    timeout = 2
+                    while(timeout > 0):
+                        timeout -= 1
 
-                    num_of_steps = len(path_info['path_json'][u'result'][u'routes'][0][u'steps'])
-                    path_string = ''
-                    for i in range(num_of_steps):
-                        if(i == num_of_steps - 1):
-                            path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
-                            break
-                        path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(';')
-                        path_string += ";".join(path_list[0:-1]) + ';'
-                    result['path'] = path_string
+                        result = {}
+                        result['id'] = path_info['city_com_num']
+                        result['origin'] = path_info['origin']
+                        result['destination'] = path_info['destination']
+                        result['driving_duration'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
+                        result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
 
-                    print('From:{} to {}, duration: {}, distance: {}'.format(result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
+                        # 解析路径
+                        num_of_steps = len(path_info['path_json'][u'result'][u'routes'][0][u'steps'])
+                        path_string = ''
+                        for i in range(num_of_steps):
+                            if(i == num_of_steps - 1):
+                                path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
+                                break
+                            path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(';')
+                            path_string += ";".join(path_list[0:-1]) + ';'
+                        result['path'] = path_string
 
-                    cursor.execute('insert into path_data values (?,?,?,?,?,?)', (result['id'], result['origin'], result['destination'], result['driving_duration'], result['distance_km'], result['path']))
+                        print('From:{} to {}, duration: {}, distance: {}'.format(result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
 
-                    path_data_db.commit()
+                        cursor.execute('insert into path_data values (?,?,?,?,?,?)', (result['id'], result['origin'], result['destination'], result['driving_duration'], result['distance_km'], result['path']))
 
-                    self._path_queue.task_done()
+                        path_data_db.commit()
+
+                        self._path_queue.task_done()
+                        break
 
                 except Exception as parser_error:
                     with self._error_lock:
@@ -185,14 +193,22 @@ def main():
     """
     Main function
     """
-    data_reader = CityCombinationsReader('city_dataset_test', CITY_COMS_QUEUE)
+
+    data_base_start_num = input('数据库起始num:')
+
+    start = time.time()
+
+    data_base_end_num = str(int(data_base_start_num) + 200000)
+
+    city_coms_db_name = 'city_coms_{0}_to_{1}'.format(data_base_start_num, data_base_end_num)
+    data_reader = CityCombinationsReader(city_coms_db_name, CITY_COMS_QUEUE)
     data_reader.read_data()
 
-    path_db_name = 'path_data.db'
+    path_db_name = 'path_data_{0}_to_{1}.db'.format(data_base_start_num, data_base_end_num)
 
     #TODO:生产环境下要去掉这一句
-    if(os.path.isfile('path_data.db')):
-        os.remove('path_data.db')
+    if(os.path.isfile(path_db_name)):
+        os.remove(path_db_name)
 
     path_data_db = sqlite3.connect(path_db_name)
     with path_data_db:
@@ -202,21 +218,17 @@ def main():
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
 
-    #TODO:生产环境下要去掉这一句
-    if(os.path.isfile('error.txt')):
-        os.remove('error.txt')
-
-    with open('error.txt', 'a') as error_file:
+    with open('crawl_error.txt', 'a') as crawl_error_file, open('parse_error.txt', 'a') as parse_error_file:
         crawler_threads = []
-        crawler_list = ['crawl_thread' + str(num) for num in range(10)]
+        crawler_list = ['crawl_thread' + str(num) for num in range(100)]
 
         for crawler_thread_id in crawler_list:
-            crawler_thread = PathCrawlerThread(thread_id=crawler_thread_id, city_com_queue=CITY_COMS_QUEUE, path_queue=PATH_QUEUE, error_file=error_file, error_lock=ERROR_LOCK)
+            crawler_thread = PathCrawlerThread(thread_id=crawler_thread_id, city_com_queue=CITY_COMS_QUEUE, path_queue=PATH_QUEUE, error_file=crawl_error_file, error_lock=ERROR_LOCK)
             crawler_thread.start()
             crawler_threads.append(crawler_thread)
 
         parser_thread_id = 'parser_thread'
-        parser_thread = ParserThread(thread_id=parser_thread_id, path_queue=PATH_QUEUE, db_name=path_db_name, error_file=error_file, error_lock=ERROR_LOCK)
+        parser_thread = ParserThread(thread_id=parser_thread_id, path_queue=PATH_QUEUE, db_name=path_db_name, error_file=parse_error_file, error_lock=ERROR_LOCK)
         parser_thread.start()
 
         # 等待城市组合队列清空
@@ -240,7 +252,11 @@ def main():
 
         print('Exiting Main Thread')
         with ERROR_LOCK:
-            error_file.close()
+            crawl_error_file.close()
+            parse_error_file.close()
+
+    end = time.time()
+    print("Time used: {}".format(end - start))
 
 if(__name__ == '__main__'):
     main()
