@@ -80,7 +80,7 @@ def dataToJson():
                 continue
             # 地级市行政区号为'xxxx00'
             elif(re.search(r'\d{4}[0]{2}', cityList[i][0])):
-                if(cityList[i][1] == '省直辖县级行政区划' or cityList[i][1] == '市辖区'):
+                if(cityList[i][1] == '省直辖县级行政区划' or cityList[i][1] == '市辖区' or cityList[i][1] == '自治区直辖县级行政区划'):
                     continue
                 cityDataset[provinceNow]['prefecture_level_city'].append(cityList[i][1])
                 continue
