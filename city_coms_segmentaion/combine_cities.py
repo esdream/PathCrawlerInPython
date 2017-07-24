@@ -186,10 +186,10 @@ def main():
     """
     main function
     """
-    city_com = CombineCity('city_dataset')
+    city_com = CombineCity('city_coms_all')
     city_com.run()
 
-    segmentation = SegmentCityComs(city_coms_db='city_dataset.db')
+    segmentation = SegmentCityComs(city_coms_db='city_coms_all.db')
     segmentation.run()
 
 if(__name__ == '__main__'):

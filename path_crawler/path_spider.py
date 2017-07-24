@@ -200,15 +200,15 @@ def main():
 
     data_base_end_num = str(int(data_base_start_num) + 200000)
 
+    path_db_name = 'path_data_{0}_to_{1}.db'.format(data_base_start_num, data_base_end_num)
+
+    if(os.path.isfile(path_db_name)):
+        print('This database of city combinations have been crawled.')
+        return
+
     city_coms_db_name = 'city_coms_{0}_to_{1}'.format(data_base_start_num, data_base_end_num)
     data_reader = CityCombinationsReader(city_coms_db_name, CITY_COMS_QUEUE)
     data_reader.read_data()
-
-    path_db_name = 'path_data_{0}_to_{1}.db'.format(data_base_start_num, data_base_end_num)
-
-    #TODO:生产环境下要去掉这一句
-    if(os.path.isfile(path_db_name)):
-        os.remove(path_db_name)
 
     path_data_db = sqlite3.connect(path_db_name)
     with path_data_db:

@@ -14,5 +14,6 @@ setup(
     install_requires=[
         "beautifulsoup4",    # beautifulsoup4, parser for html
         "sqlalchemy",    # sqalchemy, orm map of database
+        "requests"  # requests, HTTP crawler for html
     ]
 )
