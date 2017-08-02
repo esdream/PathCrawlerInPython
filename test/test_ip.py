@@ -5,7 +5,7 @@ import time
 import requests
 import json
 
-# 结构化数据
+url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin=青岛市&destination=临清市&origin_region=青岛市&destination_region=临清市&output=json&ak=YtsG0tZOwjVgDkcLZDuEiSL2PbKzP9HG'
 def dataStructured(response):
     if(response[u'status'] not in [0]):
         # 如果返回值状态码不为0（成功），则应记录返回值对应的url
@@ -26,23 +26,5 @@ def dataStructured(response):
             pathList = response[u'result'][u'routes'][0][u'steps'][i][u'path'].split(';')
             pathString = ";".join(pathList[0:-1]) + ';'
             f1.write(pathString)
-
-    # with open('test.txt', 'r') as f1, open('validation.txt', 'w') as f2:
-    #     path = f1.read()
-    #     pathpoints = path.split(';')
-    #     for point in pathpoints:
-    #         f2.write(point + '\n')
-
-
-url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin=青岛市&destination=临清市&origin_region=青岛市&destination_region=临清市&output=json&ak=YtsG0tZOwjVgDkcLZDuEiSL2PbKzP9HG'
-
-time_collection = []
-for i in range(50):
-    start = time.time()
-    response = requests.get(url).json()
-    end = time.time()
-    time_collection.append(end - start)
-
-print("average time:{}".format(sum(time_collection) / 50))
-
-dataStructured(response)
+response = requests.get(url).json()
+print(dataStructured(response))
