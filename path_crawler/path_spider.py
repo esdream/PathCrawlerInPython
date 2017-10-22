@@ -26,23 +26,28 @@ def main():
     Main function
     """
 
-    data_base_start_num = input('数据库起始num:')
+    input_filename = input('待抓取路径的城市组文件: ')
+    output_filename = input('输出文件名: ')
 
     start = time.time()
 
-    data_base_end_num = str(int(data_base_start_num) + 200000)
+    city_coms_file = input_filename
+    path_data_file = output_filename
 
-    path_db_name = 'path_data_{0}_to_{1}.db'.format(data_base_start_num, data_base_end_num)
+    # 判断待抓取的城市组文件是否存在
+    if(not os.path.exists(city_coms_file)):
+        print('The city coms file is not existed!')
+        return
 
-    if(os.path.isfile(path_db_name)):
+    # 判断是否已经抓取过该城市组的路径
+    if(os.path.exists(path_data_file)):
         print('This database of city combinations have been crawled.')
         return
 
-    city_coms_db_name = 'city_coms_{0}_to_{1}'.format(data_base_start_num, data_base_end_num)
-    data_reader = CityCombinationsReader(city_coms_db_name, CITY_COMS_QUEUE)
+    data_reader = CityCombinationsReader(city_coms_file, CITY_COMS_QUEUE)
     data_reader.read_data()
 
-    path_data_db = sqlite3.connect(path_db_name)
+    path_data_db = sqlite3.connect(path_data_file)
     with path_data_db:
         cursor = path_data_db.cursor()
         try:
@@ -50,9 +55,12 @@ def main():
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
 
-    with open('crawl_error.txt', 'a') as crawl_error_file, open('parse_error.txt', 'a') as parse_error_file:
+    with open('crawl_error.csv', mode='w', encoding='utf-8') as crawl_error_file, open('parse_error.csv', mode='w', encoding='utf-8') as parse_error_file:
         crawler_threads = []
         crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+
+        crawl_error_file.write('id,origin_city,destination_city\n')
+        parse_error_file.write('id,origin_city,destination_city\n')
 
         for crawler_thread_id in crawler_list:
             crawler_thread = PathCrawlerThread(thread_id=crawler_thread_id, city_com_queue=CITY_COMS_QUEUE, path_queue=PATH_QUEUE, error_file=crawl_error_file, error_lock=ERROR_LOCK)
@@ -61,7 +69,7 @@ def main():
 
         data_batch = []
         parser_thread_id = 'parser_thread'
-        parser_thread = ParserThread(thread_id=parser_thread_id, path_queue=PATH_QUEUE, db_name=path_db_name, error_file=parse_error_file, error_lock=ERROR_LOCK, data_batch=data_batch)
+        parser_thread = ParserThread(thread_id=parser_thread_id, path_queue=PATH_QUEUE, db_name=path_data_file, error_file=parse_error_file, error_lock=ERROR_LOCK, data_batch=data_batch)
         parser_thread.start()
 
         # 等待城市组合队列清空

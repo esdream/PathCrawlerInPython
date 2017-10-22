@@ -87,7 +87,7 @@ class ParserThread(threading.Thread):
 
             except Exception as parser_error:
                 with self._error_lock:
-                    self._error_file.write('{0}\t{1}\t{2}\n'.format(
+                    self._error_file.write('{0},{1},{2}\n'.format(
                         path_info['city_com_num'], path_info['origin'], path_info['destination']))
                     print('Parse path {} failed!'.format(
                         path_info['city_com_num']))
