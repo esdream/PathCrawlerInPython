@@ -100,6 +100,9 @@ class CombineCity(object):
                 prefecture_level_city_list.extend(city_list['prefecture_level_city'])
                 county_level_city_list.extend(city_list['county_level_city'])
 
+            # 重庆市情况特殊，需要同时添加至prefecture和county两个level列表中
+            prefecture_level_city_list.append('重庆市')
+
         return (prefecture_level_city_list, county_level_city_list)
 
 def main():

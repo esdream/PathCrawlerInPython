@@ -12,10 +12,13 @@ import re
 from bs4 import BeautifulSoup
 import requests
 
+from path_crawler.conf import global_settings
+
 # 从国家统计局官网抓取县及县以上行政区划代码
 def city_crawler():
 
-    with open('city_text.txt', 'w') as f:
+    city_file = global_settings.CITIES_URL + 'cities.csv'
+    with open(city_file, mode='w', encoding='utf-8') as f:
         url = 'http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/201703/t20170310_1471429.html'
         sendHeaders = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -49,7 +52,8 @@ def dataToJson():
     cityCodes = []
     cityNames = []
 
-    with open('city_text.txt', 'r') as f:
+    city_file = global_settings.CITIES_URL + 'cities.csv'
+    with open(city_file, mode='r', encoding='utf-8') as f:
 
         # 按行读取cityText.txt，将数据分至行政区划代码(cityCodes)和名称(cityNames)两个列表中
         for line in f:
@@ -64,7 +68,8 @@ def dataToJson():
     for i in range(lenOfCity):
         cityList.append((cityCodes[i], cityNames[i]))
 
-    with open('city_dataset.json', 'w') as f:
+    city_dataset = global_settings.CITIES_URL + 'city_dataset.json'
+    with open(city_dataset, mode='w', encoding='utf-8') as f:
 
         provinceNow = ''
         cityListNum = len(cityList)
@@ -80,7 +85,7 @@ def dataToJson():
                 continue
             # 地级市行政区号为'xxxx00'
             elif(re.search(r'\d{4}[0]{2}', cityList[i][0])):
-                if(cityList[i][1] == '省直辖县级行政区划' or cityList[i][1] == '市辖区' or cityList[i][1] == '自治区直辖县级行政区划'):
+                if(cityList[i][1] == '省直辖县级行政区划' or cityList[i][1] == '市辖区' or cityList[i][1] == '自治区直辖县级行政区划' or cityList[i][1] == '县'):
                     continue
                 cityDataset[provinceNow]['prefecture_level_city'].append(cityList[i][1])
                 continue
