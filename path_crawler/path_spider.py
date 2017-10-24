@@ -18,8 +18,31 @@ from path_crawler.parser import ParserThread
 
 CITY_COMS_QUEUE = queue.Queue()
 PATH_QUEUE = queue.Queue(300)
-# PARSER_EXIT_FLAG = False
 ERROR_LOCK = threading.Lock()
+
+#
+# # 设置参数并爬取路径和时间
+# def pathCrawler():
+#
+#     data = readComOfCity(data)
+#
+#     coord_type = input('坐标类型(默认为百度经纬度坐标):')
+#     tactics_incity = input('市内公交换乘策略(默认为0):')
+#     tactics_intercity = input('跨城公交换乘策略(默认为0):')
+#     trans_type_intercity = input('跨城交通方式策略(默认为0):')
+#     ret_coordtype = input('返回值坐标类型(默认为百度经纬度坐标):')
+#     ak = input('开发者密钥:')
+#
+#     parameter = {
+#         'coord_type': coord_type,
+#         'tactics_incity': tactics_incity,
+#         'tactics_intercity': tactics_intercity,
+#         'trans_type_intercity': trans_type_intercity,
+#         'ret_coordtype': ret_coordtype,
+#         'ak': ak or 'YtsG0tZOwjVgDkcLZDuEiSL2PbKzP9HG'
+#     }
+#
+#     crawPathAndTime(data, parameter)
 
 def main():
     """
