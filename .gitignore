@@ -3,3 +3,6 @@
 
 # exclude gitkeep
 !.gitkeep
+
+# city combinations
+/city_coms_segmentation/city_coms/*
