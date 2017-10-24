@@ -11,6 +11,8 @@ import threading
 import sqlite3
 import queue
 
+from path_crawler.conf import global_settings
+
 from path_crawler.reader import CityCombinationsReader
 from path_crawler.crawler import PathCrawlerThread
 from path_crawler import parser
@@ -54,8 +56,8 @@ def main():
 
     start = time.time()
 
-    city_coms_file = input_filename
-    path_data_file = output_filename
+    city_coms_file = global_settings.CITY_COMS_URL + input_filename
+    path_data_file = global_settings.PATH_DATA_URL + output_filename
 
     # 判断待抓取的城市组文件是否存在
     if(not os.path.exists(city_coms_file)):
