@@ -76,7 +76,7 @@ def main():
     with path_data_db:
         cursor = path_data_db.cursor()
         try:
-            cursor.execute('create table path_data(id int primary key, origin_city varchar(20), destination_city varchar(20), duration double, distance double, path varchar(255))')
+            cursor.execute('create table path_data(id int primary key, origin_city varchar(20), destination_city varchar(20), origin_region varchar(20), destination_region varchar(20), duration_s double, distance_km double, path varchar(255))')
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
 
@@ -84,8 +84,8 @@ def main():
         crawler_threads = []
         crawler_list = ['crawl_thread' + str(num) for num in range(50)]
 
-        crawl_error_file.write('id,origin_city,destination_city\n')
-        parse_error_file.write('id,origin_city,destination_city\n')
+        crawl_error_file.write('id,origin_city,destination_city,origin_region,destination_region\n')
+        parse_error_file.write('id,origin_city,destination_city,origin_region,destination_region\n')
 
         for crawler_thread_id in crawler_list:
             crawler_thread = PathCrawlerThread(thread_id=crawler_thread_id, city_com_queue=CITY_COMS_QUEUE, path_queue=PATH_QUEUE, error_file=crawl_error_file, error_lock=ERROR_LOCK)
@@ -115,7 +115,7 @@ def main():
         # 等待解析线程完成
         parser_thread.join()
 
-        cursor.executemany('insert into path_data values (?,?,?,?,?,?)', data_batch)
+        cursor.executemany('insert into path_data values (?,?,?,?,?,?,?,?)', data_batch)
         path_data_db.commit()
         data_batch[:] = []
         
