@@ -50,6 +50,8 @@ class ParserThread(threading.Thread):
                     result['id'] = path_info['city_com_num']
                     result['origin'] = path_info['origin']
                     result['destination'] = path_info['destination']
+                    result['origin_region'] = path_info['origin_region']
+                    result['destination_region'] = path_info['destination_region']
                     result['driving_duration'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
                     result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
 
@@ -70,7 +72,7 @@ class ParserThread(threading.Thread):
                         result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
 
                     result_vector = (result['id'], result['origin'], result['destination'],
-                                     result['driving_duration'], result['distance_km'], result['path'])
+                                     result['origin_region'], result['destination_region'], result['driving_duration'], result['distance_km'], result['path'])
                     self._data_batch.append(result_vector)
 
                     if(len(self._data_batch) == 50):
@@ -78,7 +80,7 @@ class ParserThread(threading.Thread):
                         with path_data_db:
                             cursor = path_data_db.cursor()
                             cursor.executemany(
-                                'insert into path_data values (?,?,?,?,?,?)', self._data_batch)
+                                'insert into path_data values (?,?,?,?,?,?,?,?)', self._data_batch)
                             path_data_db.commit()
                             self._data_batch[:] = []
 
@@ -87,8 +89,8 @@ class ParserThread(threading.Thread):
 
             except Exception as parser_error:
                 with self._error_lock:
-                    self._error_file.write('{0},{1},{2}\n'.format(
-                        path_info['city_com_num'], path_info['origin'], path_info['destination']))
+                    self._error_file.write('{0},{1},{2},{3},{4}\n'.format(
+                        path_info['city_com_num'], path_info['origin'], path_info['destination'], path_info['origin_region'], path_info['destination_region']))
                     print('Parse path {} failed!'.format(
                         path_info['city_com_num']))
                     print(parser_error)

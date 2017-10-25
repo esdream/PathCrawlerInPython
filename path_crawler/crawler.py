@@ -39,9 +39,9 @@ class PathCrawlerThread(threading.Thread):
                 break
             else:
                 city_coms_data = self._city_com_queue.get()
-                print('path {0[0]}: From {0[1]} to {0[2]} crawled...'.format(
+                print('path {0[0]}: From {0[1]}(region {0[3]}) to {0[2]}(region {0[4]}) crawled...'.format(
                     city_coms_data))
-                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[1]}&destination_region={0[2]}&output=json&ak=KtmshjiGv5nDDvYwcWbF0GIfhZf1anvE'.format(
+                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[3]}&destination_region={0[4]}&output=json&ak=KtmshjiGv5nDDvYwcWbF0GIfhZf1anvE'.format(
                     city_coms_data)
 
                 timeout = 2
@@ -55,17 +55,19 @@ class PathCrawlerThread(threading.Thread):
                         path_info['city_com_num'] = city_coms_data[0]
                         path_info['origin'] = city_coms_data[1]
                         path_info['destination'] = city_coms_data[2]
+                        path_info['origin_region'] = city_coms_data[3]
+                        path_info['destination_region'] = city_coms_data[4]
                         path_info['path_json'] = requests.get(
                             url, timeout=5).json()
                         self._path_queue.put(path_info)
-                        print('path {0[0]}: From {0[1]} to {0[2]} crawl succeed.'.format(
+                        print('path {0[0]}: From {0[1]}(region {0[3]}) to {0[2]}(region {0[4]}) crawl succeed.'.format(
                             city_coms_data))
                         break
                     except Exception as crawl_error:
                         if(timeout == 0):
                             with self._error_lock:
-                                self._error_file.write('{0},{1},{2}\n'.format(
-                                    city_coms_data[0], city_coms_data[1], city_coms_data[2]))
+                                self._error_file.write('{0[0]},{0[1]},{0[2]},{0[3]},{0[4]}\n'.format(
+                                    city_coms_data))
                                 print('Crawl path {0[0]} failed!'.format(
                                     city_coms_data))
                                 print(crawl_error)

@@ -87,13 +87,15 @@ def dataToJson():
             elif(re.search(r'\d{4}[0]{2}', cityList[i][0])):
                 if(cityList[i][1] == '省直辖县级行政区划' or cityList[i][1] == '市辖区' or cityList[i][1] == '自治区直辖县级行政区划' or cityList[i][1] == '县'):
                     continue
-                cityDataset[provinceNow]['prefecture_level_city'].append(cityList[i][1])
+                # cityDataset[provinceNow]['prefecture_level_city'].append(cityList[i][1])
+                cityDataset[provinceNow]['prefecture_level_city'].append(cityList[i])
                 continue
 
             # 县级行政区
             elif(cityList[i][1] == '市辖区' or cityList[i][1] == '县'):
                 continue
-            cityDataset[provinceNow]['county_level_city'].append(cityList[i][1])
+            # cityDataset[provinceNow]['county_level_city'].append(cityList[i][1])
+            cityDataset[provinceNow]['county_level_city'].append(cityList[i])
 
         data = json.dumps(cityDataset, ensure_ascii=False)
         f.write(data)
