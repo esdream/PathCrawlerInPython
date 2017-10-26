@@ -68,8 +68,8 @@ class ParserThread(threading.Thread):
                         path_string += ";".join(path_list[0:-1]) + ';'
                     result['path'] = path_string
 
-                    print('From {} to {} parse succeed: duration: {}, distance: {}'.format(
-                        result['origin'], result['destination'], result['driving_duration'], result['distance_km']))
+                    print('From {0}(region: {1}) to {2}(region: {3}) parse succeed: duration: {4}, distance: {5}'.format(
+                        result['origin'], result['origin_region'], result['destination'], result['destination_region'], result['driving_duration'], result['distance_km']))
 
                     result_vector = (result['id'], result['origin'], result['destination'],
                                      result['origin_region'], result['destination_region'], result['driving_duration'], result['distance_km'], result['path'])

@@ -51,13 +51,14 @@ def main():
     Main function
     """
 
-    input_filename = input('待抓取路径的城市组文件: ')
-    output_filename = input('输出文件名: ')
+    input_filename = input('待抓取路径的城市组文件名（不需要输入文件拓展名）: ')
+    output_filename = input('输出文件名（不需要输入文件拓展名）: ')
 
     start = time.time()
 
-    city_coms_file = global_settings.CITY_COMS_URL + input_filename
-    path_data_file = global_settings.PATH_DATA_URL + output_filename
+    # 默认输入文件类型为.csv，默认输出文件类型为.db
+    city_coms_file = global_settings.CITY_COMS_URL + input_filename + '.csv'
+    path_data_file = global_settings.PATH_DATA_URL + output_filename + '.db'
 
     # 判断待抓取的城市组文件是否存在
     if(not os.path.exists(city_coms_file)):
@@ -80,7 +81,21 @@ def main():
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
 
-    with open('crawl_error.csv', mode='w', encoding='utf-8') as crawl_error_file, open('parse_error.csv', mode='w', encoding='utf-8') as parse_error_file:
+    parse_error_path = global_settings.PARSE_ERROR_URL + output_filename
+    if(os.path.exists(parse_error_path)):
+        parse_error_file = parse_error_path + '/parse_error.csv'
+    else:
+        os.mkdir(parse_error_path)
+        parse_error_file = parse_error_path + '/parse_error.csv'
+    
+    crawl_error_path = global_settings.CRAWL_ERROR_URL + output_filename
+    if(os.path.exists(crawl_error_path)):
+        crawl_error_file = crawl_error_path + '/crawl_error.csv'
+    else:
+        os.mkdir(crawl_error_path)
+        crawl_error_file = crawl_error_path + '/crawl_error.csv'
+
+    with open(crawl_error_file, mode='w', encoding='utf-8') as crawl_error_file, open(parse_error_file, mode='w', encoding='utf-8') as parse_error_file:
         crawler_threads = []
         crawler_list = ['crawl_thread' + str(num) for num in range(50)]
 
