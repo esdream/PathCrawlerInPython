@@ -65,9 +65,10 @@ class PathCrawlerThread(threading.Thread):
                         break
                     except Exception as crawl_error:
                         if(timeout == 0):
-                            with self._error_lock:
-                                self._error_file.write('{0[0]},{0[1]},{0[2]},{0[3]},{0[4]}\n'.format(
-                                    city_coms_data))
-                                print('Crawl path {0[0]} failed!'.format(
-                                    city_coms_data))
-                                print(crawl_error)
+                            self._city_com_queue.put(city_coms_data)
+                            # with self._error_lock:
+                            #     self._error_file.write('{0[0]},{0[1]},{0[2]},{0[3]},{0[4]}\n'.format(
+                            #         city_coms_data))
+                            #     print('Crawl path {0[0]} failed!'.format(
+                            #         city_coms_data))
+                            #     print(crawl_error)

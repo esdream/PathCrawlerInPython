@@ -6,3 +6,6 @@
 
 # city combinations
 /path_crawler/data/*
+
+# __pycache__
+__pycache__
