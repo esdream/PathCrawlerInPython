@@ -178,7 +178,7 @@ class TransitParserThread(threading.Thread):
 
             except Exception as parser_error:
                 with self._error_lock:
-                    self._error_file.write('{0},{1},{2}\n'.format(
+                    self._error_file.write('{0},"{1}","{2}"\n'.format(
                         path_info['od_id'], path_info['origin_coord'], path_info['des_coord']))
                     print('Parse path {} failed!'.format(
                         path_info['od_id']))
