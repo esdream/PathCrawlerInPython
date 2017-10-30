@@ -9,8 +9,8 @@ import sqlite3
 
 PARSER_EXIT_FLAG = False
 
-# 解析线程
-class ParserThread(threading.Thread):
+# 驾车模式解析线程
+class DrivingParserThread(threading.Thread):
     """Path data parser thread.
 
     Parse the path data crawled from Baidu Map.

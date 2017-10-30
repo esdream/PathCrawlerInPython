@@ -6,37 +6,36 @@ See document in docs/topics/reader.md
 
 import os
 import csv
-import sqlite3
 
 # 读取数据库中的城市组合
-class CityCombinationsReader(object):
-    """city combinations reader.
+class ODReader(object):
+    """Origin and destination reader.
 
-    Read the combinations of city from city coms csv file.
+    Read the origin and destination data from csv file.
     """
 
-    def __init__(self, city_coms_file, city_coms_queue):
-        self.__city_coms_file = city_coms_file
-        self.__city_coms_queue = city_coms_queue
+    def __init__(self, od_file, od_queue):
+        self.__od_file = od_file
+        self.__od_queue = od_queue
 
     def read_data(self):
-        """Initiator of CityCombinationsReader.
+        """Initiator of ODReader.
 
         Run the program of reader.
         """
 
-        print('Reader of combinations start...')
-        self.__combinations_reader()
-        print('Reader of combinations finished. The city combinations have read in memory.')
+        print('Reader of OD start...')
+        self.__od_reader()
+        print('Reader of OD finished. The OD data have read in memory.')
 
-    def __combinations_reader(self):
+    def __od_reader(self):
         """Data Reader.
 
-        Read city combinations data from 'comsfile.csv', and put coms data into CITY_COMS_QUEUE.
+        Read OD data from 'ODfile.csv', and put OD data into OD_QUEUE.
         """
 
-        with open(self.__city_coms_file, mode='r', encoding='utf-8') as f_city_coms_file:
-            f_city_coms_data = csv.reader(f_city_coms_file)
-            next(f_city_coms_data)
-            for row in f_city_coms_data:
-                self.__city_coms_queue.put(row)
+        with open(self.__od_file, mode='r', encoding='utf-8') as f_od_file:
+            f_od_data = csv.reader(f_od_file)
+            next(f_od_data)
+            for row in f_od_data:
+                self.__od_queue.put(row)
