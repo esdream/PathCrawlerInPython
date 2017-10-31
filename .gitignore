@@ -7,5 +7,8 @@
 # city combinations
 /path_crawler/data/*
 
-# __pycache__
+# Byte-compiled / optimized / DLL files
+/path_crawler/__pycache__/*
+/path_crawler/conf/__pycache__/*
 __pycache__/
+*.pyc

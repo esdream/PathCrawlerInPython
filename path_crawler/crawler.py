@@ -112,12 +112,8 @@ class TransitCrawlerThread(threading.Thread):
                 for (_, values) in self._crawl_parameter.items():
                     crawl_param_values.append(values)
 
-                # url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]}&destination={0[2]}&coord_type={1[0]}&tactics_incity={1[1]}&tactics_intercity={1[2]}&trans_type_intercity={1[3]}&ret_coordtype={1[4]}&ak={1[5]}'.format(
-                #     od_data, crawl_param_values)
-
                 url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]}&destination={0[2]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={ak}'.format(
                     od_data, **self._crawl_parameter)
-
 
                 timeout = 2
                 while(timeout > 0):
