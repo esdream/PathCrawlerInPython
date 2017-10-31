@@ -2,7 +2,7 @@
 
 """Combine the cities.
 
-Combine the primary cities and county-level cities. Save the combinations in database.
+Combine the primary cities and county-level cities. Save the combinations in csv files.
 Args:
     city_filename: The file of cities.
 """
@@ -36,11 +36,11 @@ class CombineCity(object):
         Combine prefecture level cities with prefecture level cities or county level cities. And save them in a number of csv files.
         """
 
-        prefecture_level_city_list, county_level_city_list = self.__city_data_parser()
+        prefecture_level_city_list, county_level_city_list = self.city_data_parser()
         count_id = 0
         
         # 组合
-        city_coms_all_filepath = global_settings.CITY_COMS_URL + 'city_coms_all.csv'
+        city_coms_all_filepath = global_settings.OD_URL + 'city_coms_all.csv'
         
         with open(city_coms_all_filepath, mode='w', encoding='utf-8') as f_city_coms:
             f_city_coms.write('id,origin_city,destination_city,origin_region,destination_region\n')
@@ -66,7 +66,7 @@ class CombineCity(object):
             for city_coms_start in range(0, count_id, 200000):
                 city_coms_name = 'city_coms_{}.csv'.format(city_coms_start)
                 city_coms_path = os.path.join(
-                    global_settings.CITY_COMS_URL, city_coms_name)
+                    global_settings.OD_URL, city_coms_name)
                 with open(city_coms_path, mode='w', encoding='utf-8') as f_city_coms:
                     f_city_coms.write('id,origin_city,destination_city,origin_region,destination_region\n')
                     print(city_coms_start + 1, city_coms_start + 200001)
@@ -74,7 +74,7 @@ class CombineCity(object):
                     for city_com in city_coms_data:
                         f_city_coms.write(city_com)
 
-    def __city_data_parser(self):
+    def city_data_parser(self):
         """Parser of city data.
 
         Parse the data of cities, store the cities in prefecture level city list and county level city list.
