@@ -109,7 +109,7 @@ def main():
             )
             parser_thread.start()
 
-            # 等待城市组合队列清空
+            # 等待OD队列清空
             while not OD_QUEUE.empty():
                 pass
 
@@ -196,6 +196,7 @@ def main():
             except Exception as create_db_error:
                 print('create database error: {}'.format(create_db_error))
 
+        # 解析错误的OD数据存储的文件
         parse_error_path = global_settings.PARSE_ERROR_URL + output_filename
         if(os.path.exists(parse_error_path)):
             parse_error_file = parse_error_path + '/parse_error.csv'
@@ -203,6 +204,7 @@ def main():
             os.mkdir(parse_error_path)
             parse_error_file = parse_error_path + '/parse_error.csv'
 
+        # 抓取错误的OD数据存储的文件
         crawl_error_path = global_settings.CRAWL_ERROR_URL + output_filename
         if(os.path.exists(crawl_error_path)):
             crawl_error_file = crawl_error_path + '/crawl_error.csv'
@@ -244,7 +246,7 @@ def main():
             )
             parser_thread.start()
 
-            # 等待城市组合队列清空
+            # 等待OD队列清空
             while not OD_QUEUE.empty():
                 pass
 

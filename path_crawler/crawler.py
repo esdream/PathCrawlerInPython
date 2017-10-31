@@ -42,8 +42,8 @@ class DrivingCrawlerThread(threading.Thread):
                 city_coms_data = self._od_queue.get()
                 print('path {0[0]}: From {0[1]}(region {0[3]}) to {0[2]}(region {0[4]}) crawled...'.format(
                     city_coms_data))
-                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[3]}&destination_region={0[4]}&output=json&ak={1}'.format(
-                    city_coms_data, self._crawl_parameter['ak'])
+                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[3]}&destination_region={0[4]}&output=json&ak={ak}'.format(
+                    city_coms_data, **self._crawl_parameter)
 
                 timeout = 2
                 while(timeout > 0):
@@ -58,8 +58,7 @@ class DrivingCrawlerThread(threading.Thread):
                         path_info['destination'] = city_coms_data[2]
                         path_info['origin_region'] = city_coms_data[3]
                         path_info['destination_region'] = city_coms_data[4]
-                        path_info['path_json'] = requests.get(
-                            url, timeout=5).json()
+                        path_info['path_json'] = requests.get(url, timeout=5).json()
                         self._path_queue.put(path_info)
                         print('path {0[0]}: From {0[1]}(region {0[3]}) to {0[2]}(region {0[4]}) crawl succeed.'.format(
                             city_coms_data))
@@ -93,10 +92,10 @@ class TransitCrawlerThread(threading.Thread):
 
     def run(self):
         print('No.{} crawler start...'.format(self._thread_id))
-        self.__transit_path_cralwer()
+        self.__transit_path_crawler()
         print('No.{} crawler finished!'.format(self._thread_id))
 
-    def __transit_path_cralwer(self):
+    def __transit_path_crawler(self):
         """Crawler function.
 
         Send requests to Baidu Map and get the driving mode path data.
@@ -110,10 +109,15 @@ class TransitCrawlerThread(threading.Thread):
                 print('path {0[0]}: From {0[1]} to {0[2]} crawled...'.format(
                     od_data))
                 crawl_param_values = []
-                for (key, values) in self._crawl_parameter.items():
+                for (_, values) in self._crawl_parameter.items():
                     crawl_param_values.append(values)
-                url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]}&destination={0[2]}&coord_type={1[0]}&tactics_incity={1[1]}&tactics_intercity={1[2]}&trans_type_intercity={1[3]}&ret_coordtype={1[4]}&ak={1[5]}'.format(
-                    od_data, crawl_param_values)
+
+                # url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]}&destination={0[2]}&coord_type={1[0]}&tactics_incity={1[1]}&tactics_intercity={1[2]}&trans_type_intercity={1[3]}&ret_coordtype={1[4]}&ak={1[5]}'.format(
+                #     od_data, crawl_param_values)
+
+                url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]}&destination={0[2]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={ak}'.format(
+                    od_data, **self._crawl_parameter)
+
 
                 timeout = 2
                 while(timeout > 0):

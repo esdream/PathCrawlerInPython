@@ -115,6 +115,10 @@ class TransitParserThread(threading.Thread):
         print('No.{} crawler finished!'.format(self._thread_id))
 
     def __data_parser(self):
+        """Parser of transit json data.
+
+        Parse the transit data.
+        """
         while not PARSER_EXIT_FLAG:
 
             try:
@@ -134,7 +138,6 @@ class TransitParserThread(threading.Thread):
                     result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
                     result['duration_s'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
                     result['price_yuan'] = path_info['path_json'][u'result'][u'routes'][0][u'price']
-
 
                     # 解析路径
                     path_string = ''
@@ -178,7 +181,7 @@ class TransitParserThread(threading.Thread):
 
             except Exception as parser_error:
                 with self._error_lock:
-                    self._error_file.write('{0},{1},{2}\n'.format(
+                    self._error_file.write('{0},"{1}","{2}"\n'.format(
                         path_info['od_id'], path_info['origin_coord'], path_info['des_coord']))
                     print('Parse path {} failed!'.format(
                         path_info['od_id']))
