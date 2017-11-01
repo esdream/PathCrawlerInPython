@@ -42,7 +42,7 @@ class DrivingCrawlerThread(threading.Thread):
                 city_coms_data = self._od_queue.get()
                 print('path {0[0]}: From {0[1]}(region {0[3]}) to {0[2]}(region {0[4]}) crawled...'.format(
                     city_coms_data))
-                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[3]}&destination_region={0[4]}&output=json&ak={ak}'.format(
+                url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]}&destination={0[2]}&origin_region={0[3]}&destination_region={0[4]}&tactics={tactics}&output=json&ak={ak}'.format(
                     city_coms_data, **self._crawl_parameter)
 
                 timeout = 2

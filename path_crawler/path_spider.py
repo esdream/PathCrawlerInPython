@@ -28,12 +28,14 @@ def main():
 
     # 驾车模式
     if(str(mode) == '1'):
-        input_filename = input('待抓取路径的城市组文件名（csv文件名，不需要输入文件拓展名）: ')
-        output_filename = input('输出文件名（不需要输入文件拓展名）: ')
+        input_filename = input('待抓取路径的城市组文件名（csv文件名，不需要输入文件拓展名）：')
+        output_filename = input('输出文件名（不需要输入文件拓展名）：')
 
         # 使用百度API时需要输入的参数
-        ak = input('开发者密钥（企业号/个人号）: ')
+        ak = input('开发者密钥（企业号/个人号）：')
+        tactics = input('导航策略（默认为12，10 不走高速；11 常规路线；12 距离较短；13 躲避拥堵）：')
         crawl_parameter = {
+            'tactics': tactics,
             'ak': ak
         }
 
