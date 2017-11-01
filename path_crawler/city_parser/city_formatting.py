@@ -31,7 +31,7 @@ class FormatCity(object):
     def __city_formater(self):
         city_combiner = CombineCity(self.__city_filename)
         prefecture_level_city_list, county_level_city_list = city_combiner.city_data_parser()
-        count_id = 0
+        count_id = 1
 
         formatting_cities_filepath = global_settings.CITIES_URL + 'formatting_cities.csv'
         with open(formatting_cities_filepath, mode='w', encoding='utf-8') as f_format:
