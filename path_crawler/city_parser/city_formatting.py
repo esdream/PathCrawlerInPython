@@ -9,7 +9,7 @@ Args:
 
 import os
 from path_crawler.conf import global_settings
-from path_crawler.city_parser.combine_cities import CombineCity
+from path_crawler.city_parser.prefecture_to_county import CombineCity
 
 class FormatCity(object):
     """Format the cities.

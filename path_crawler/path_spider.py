@@ -44,7 +44,7 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
             # 根据不同的交通方式创建不同的数据库格式
             if(str(mode) == '1'):
                 cursor.execute(
-                    'create table path_data(id int primary key, origin_city varchar(20), destination_city varchar(20), origin_region varchar(20), destination_region varchar(20), duration_s double, distance_km double, path varchar(255))')
+                    'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin varchar(20), destination varchar(20), origin_region varchar(20), destination_region varchar(20), duration_s double, distance_km double, path varchar(255))')
             elif(str(mode) == '2'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin_city varchar(20), destination_city varchar(20), duration_s double, distance_km double, price_yuan double, path varchar(255))')
@@ -62,9 +62,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
         # 根据不同的交通方式写入不同的error文件头
         if(str(mode) == '1'):
             f_crawl_error.write(
-                'id,origin_city,destination_city,origin_region,destination_region\n')
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,origin,destination,origin_region,destination_region\n')
             f_parse_error.write(
-                'id,origin_city,destination_city,origin_region,destination_region\n')
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,origin,destination,origin_region,destination_region\n')
         elif(str(mode) == '2'):
             f_crawl_error.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
@@ -162,7 +162,7 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
         # 根据不同的交通方式写入最后不同的内容
         if(str(mode) == '1'):
             cursor.executemany(
-                'insert into path_data values (?,?,?,?,?,?,?,?)', data_batch)
+                'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?,?)', data_batch)
         elif(str(mode) == '2'):
             cursor.executemany(
                 'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?)', data_batch)
@@ -196,9 +196,11 @@ def main():
         output_filename = input('输出文件名（不需要输入文件拓展名）：')
 
         # 使用百度驾车API时需要输入的参数
+        coord_or_name = input('请选择OD数据类型（默认为1）：1 地点名称；2 经纬度')
         key = input('百度开发者密钥：')
         tactics = input('导航策略（默认为12，10 不走高速；11 常规路线；12 距离较短；13 躲避拥堵）：')
         crawl_parameter = {
+            'coord_or_name': coord_or_name or '1',
             'tactics': tactics or '12',
             'key': key
         }

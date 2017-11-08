@@ -48,6 +48,10 @@ class BaiduDrivingParserThread(threading.Thread):
 
                     result = {}
                     result['id'] = path_info['city_com_num']
+                    result['origin_lat'] = path_info['origin_lat']
+                    result['origin_lng'] = path_info['origin_lng']
+                    result['destination_lat'] = path_info['destination_lat']
+                    result['destination_lng'] = path_info['destination_lng']
                     result['origin'] = path_info['origin']
                     result['destination'] = path_info['destination']
                     result['origin_region'] = path_info['origin_region']
@@ -68,11 +72,10 @@ class BaiduDrivingParserThread(threading.Thread):
                         path_string += ";".join(path_list[0:-1]) + ';'
                     result['path'] = path_string
 
-                    print('From {0}(region: {1}) to {2}(region: {3}) parse succeed: duration: {4}, distance: {5}'.format(
-                        result['origin'], result['origin_region'], result['destination'], result['destination_region'], result['driving_duration'], result['distance_km']))
+                    print('From {origin}#{origin_lat},{origin_lng}(region: {origin_region}) to {destination}#{destination_lat},{destination_lng}(region: {destination_region}) parse succeed: duration: {driving_duration}, distance: {distance_km}'.format(
+                        **result))
 
-                    result_vector = (result['id'], result['origin'], result['destination'],
-                                     result['origin_region'], result['destination_region'], result['driving_duration'], result['distance_km'], result['path'])
+                    result_vector = (result['id'], result['origin_lat'], result['origin_lng'], result['destination_lat'], result['destination_lng'], result['origin'], result['destination'], result['origin_region'], result['destination_region'], result['driving_duration'], result['distance_km'], result['path'])
                     self._data_batch.append(result_vector)
 
                     if(len(self._data_batch) == 50):
@@ -80,7 +83,7 @@ class BaiduDrivingParserThread(threading.Thread):
                         with path_data_db:
                             cursor = path_data_db.cursor()
                             cursor.executemany(
-                                'insert into path_data values (?,?,?,?,?,?,?,?)', self._data_batch)
+                                'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?,?)', self._data_batch)
                             path_data_db.commit()
                             self._data_batch[:] = []
 
@@ -89,8 +92,8 @@ class BaiduDrivingParserThread(threading.Thread):
 
             except Exception as parser_error:
                 with self._error_lock:
-                    self._error_file.write('{0},{1},{2},{3},{4}\n'.format(
-                        path_info['city_com_num'], path_info['origin'], path_info['destination'], path_info['origin_region'], path_info['destination_region']))
+                    self._error_file.write(
+                        '{city_com_num},{origin_lat},{origin_lng},{destination_lat},{destination_lng},{origin},{destination},{origin_region},{destination_region}\n'.format(**path_info))
                     print('Parse path {} failed!'.format(
                         path_info['city_com_num']))
                     print(parser_error)
@@ -252,10 +255,6 @@ class AMapDrivingParserThread(threading.Thread):
 
                     result_vector = (result['id'], result['origin_lat'], result['origin_lng'], result['destination_lat'], result['destination_lng'], result['duration_s'], result['distance_km'], result['taxi_cost'], result['path'])
 
-                    # for (key, value) in result.items():
-                    #     if(key == 'path'):
-                    #         print('_')
-                    #     print(key + ':' + str(value))
                     self._data_batch.append(result_vector)
 
                     if(len(self._data_batch) == 50):

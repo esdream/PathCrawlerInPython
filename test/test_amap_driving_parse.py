@@ -7,7 +7,7 @@ import json
 
 # 结构化数据
 def dataStructured(response):
-    if(str(response[u'status']) != 1):
+    if(str(response[u'status']) != '1'):
         # 如果返回值状态码不为0（成功），则应记录返回值对应的url
         print(response[u'status'])
         print(response[u'info'])
@@ -32,22 +32,24 @@ def dataStructured(response):
             path_string = ";".join(path_list[0:-1]) + ';'
             f1.write(path_string)
 
-    for (key, value) in result.items():
-        print(key + ':' + str(value))
+    # for (key, value) in result.items():
+    #     print(key + ':' + str(value))
 
-    print('count_of_substeps: ' + str(count_of_substeps))
+    # print('count_of_substeps: ' + str(count_of_substeps))
 
 
-url = 'http://restapi.amap.com/v3/direction/driving?key=08f38ccac051f9d5e32d1a121db39ab4&origin=117.12312455,40.2343453&destination=109.23435565,38.90816'
+url = 'http://restapi.amap.com/v3/direction/driving?key=08f38ccac051f9d5e32d1a121db39ab4&origin=120.384428,36.105214&destination=115.782601,36.782069'
 
-# time_collection = []
-# for i in range(50):
-#     start = time.time()
-#     response = requests.get(url).json()
-#     end = time.time()
-#     time_collection.append(end - start)
+time_collection = []
+try:
+    for i in range(50):
+        start = time.time()
+        response = requests.get(url).json()
+        end = time.time()
+        time_collection.append(end - start)
+except Exception as err:
+    print(err)
 
-# print("average time:{}".format(sum(time_collection) / 50))
+print("average time:{}".format(sum(time_collection) / 50))
 
-response = requests.get(url).json()
 dataStructured(response)
