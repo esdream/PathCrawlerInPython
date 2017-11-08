@@ -196,7 +196,7 @@ def main():
         output_filename = input('输出文件名（不需要输入文件拓展名）：')
 
         # 使用百度驾车API时需要输入的参数
-        coord_or_name = input('请选择OD数据类型（默认为1）：1 地点名称；2 经纬度')
+        coord_or_name = input('请选择OD数据类型（默认为1，1 地点名称；2 经纬度）：')
         key = input('百度开发者密钥：')
         tactics = input('导航策略（默认为12，10 不走高速；11 常规路线；12 距离较短；13 躲避拥堵）：')
         crawl_parameter = {

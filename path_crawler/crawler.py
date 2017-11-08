@@ -151,7 +151,7 @@ class BaiduTransitCrawlerThread(threading.Thread):
                 # for (_, values) in self._crawl_parameter.items():
                 #     crawl_param_values.append(values)
 
-                url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={ak}'.format(
+                url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={key}'.format(
                     od_data, **self._crawl_parameter)
 
                 timeout = 2

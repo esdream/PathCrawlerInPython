@@ -135,7 +135,7 @@ class BaiduTransitParserThread(threading.Thread):
                     result['id'] = path_info['od_id']
                     result['origin_lat'] = path_info['origin_lat']
                     result['origin_lng'] = path_info['origin_lng']
-                    result['destination_lat'] = path_info['dstination_lng']
+                    result['destination_lat'] = path_info['destination_lng']
                     result['destination_lng'] = path_info['destination_lng']
                     result['origin_city'] = path_info['path_json'][u'result'][u'origin'][u'city_name']
                     result['destination_city'] = path_info['path_json'][u'result'][u'destination'][u'city_name']

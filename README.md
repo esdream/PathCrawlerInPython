@@ -39,7 +39,7 @@ You should format your OD data as follow and save it as a **`.csv`** file(**spli
 
 To crawl path data, run command as follow.
 ```shell
-$ python -m path_crawler.crawler
+$ python -m path_crawler.path_spider
 ```
 
 In path crawler, we provide two Web Map API methods: Baidu Map API and AMap API(GaoDe Map API). 
