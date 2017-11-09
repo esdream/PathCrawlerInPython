@@ -55,3 +55,24 @@ In version 1.5.1, the crawler will resend requests of od data which was crawled 
 ### Deal with Parse Error
 
 The od data which was parsed failed will be recorded in a csv file named `input-filename.csv` and be stored in `path_crawler/data/parse_error/` directory. Normally, you should copy this parse error file to `path_crawler/data/od/` directory and **use another Web Map API to crawl it again**. For instance, you crawl a od data using Baidu Map API and get a parse error file at first time, you should copy this file to od data and crawl it again using Amap API.
+
+## Other Tools
+
+### Geo Encoding
+
+Transform address and coordinates each other.
+
+#### Transform address to coordinates
+
+First, format your address data as follow and store them into a `.csv` file(encoded in utf-8).
+
+|id|address|city|
+|---|---|---|
+||||
+
+Then place it in `path_crawler/data/geo_encoding/` directory.
+
+Finally, run command below.
+```shell
+$ python -m path_crawler.geo_encodings
+```

@@ -20,6 +20,8 @@ CRAWL_ERROR_URL = GLOBAL_SETTINGS_URL + '/../data/crawl_error/'
 
 PARSE_ERROR_URL = GLOBAL_SETTINGS_URL + '/../data/parse_error/'
 
+GEO_ENCODING_URL = GLOBAL_SETTINGS_URL + '/../data/geo_encoding/'
+
 if(__name__ == '__main__'):
     print(OD_URL)
     print(CITIES_URL)
