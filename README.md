@@ -1,7 +1,6 @@
 # Path Crawler
 
 ![PyPI](https://img.shields.io/pypi/pyversions/Django.svg)
-![license](https://img.shields.io/github/license/mashape/apistatus.svg)
 
 Crawl the path data using Web Map API.
 
@@ -62,7 +61,7 @@ The od data which was parsed failed will be recorded in a csv file named `input-
 
 Transform address and coordinates each other.
 
-#### Transform address to coordinates
+#### Transform Addresses to Coordinates
 
 First, format your address data as follow and store them into a `.csv` file(encoded in utf-8).
 
@@ -76,3 +75,7 @@ Finally, run command below.
 ```shell
 $ python -m path_crawler.geo_encodings
 ```
+
+#### Transform Coordinates to Addresses
+
+WIP...
