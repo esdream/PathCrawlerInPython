@@ -42,4 +42,16 @@ To crawl path data, run command as follow.
 $ python -m path_crawler.path_spider
 ```
 
-In path crawler, we provide two Web Map API methods: Baidu Map API and AMap API(GaoDe Map API). 
+In path crawler, we provide two Web Map API -- Baidu Map API and AMap API(GaoDe Map API), which include 2 transport schemes -- driving and transit. You can choose precise schemes and crawling parameters for your OD data and your purposes. 
+
+After data crawling, the path data will be stored in `path_crawler/data/path_data/` directory.
+
+## Deal with Error
+
+### Deal with Crawl Error
+
+In version 1.5.1, the crawler will resend requests of od data which was crawled failed. So you do not need to deal with crawl error manually.
+
+### Deal with Parse Error
+
+The od data which was parsed failed will be recorded in a csv file named `input-filename.csv` and be stored in `path_crawler/data/parse_error/` directory. Normally, you should copy this parse error file to `path_crawler/data/od/` directory and **use another Web Map API to crawl it again**. For instance, you crawl a od data using Baidu Map API and get a parse error file at first time, you should copy this file to od data and crawl it again using Amap API.
