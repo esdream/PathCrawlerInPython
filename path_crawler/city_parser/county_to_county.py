@@ -9,7 +9,6 @@ Args:
 
 import os
 import csv
-import json
 from path_crawler.conf import global_settings
 
 # 组合城市
@@ -47,15 +46,9 @@ class CombineCity(object):
                 county_level_city_list.append(row)
 
         count_id = 0
-        
-        od_dir = global_settings.OD_URL + 'county_to_county'
-        if(os.path.exists(od_dir)):
-            city_coms_all_filepath = od_dir + '/city_coms_all.csv'
-        else:
-            os.mkdir(od_dir)
-            city_coms_all_filepath = od_dir + '/city_coms_all.csv'
-        
-        with open(city_coms_all_filepath, mode='w', encoding='utf-8') as f_city_coms:
+        city_coms_all_file = global_settings.OD_URL + '/city_coms_all.csv'
+
+        with open(city_coms_all_file, mode='w', encoding='utf-8') as f_city_coms:
             f_city_coms.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng,origin,destination,origin_region,destination_region\n')
 
@@ -67,11 +60,11 @@ class CombineCity(object):
                     count_id += 1
 
         # 分表
-        with open(city_coms_all_filepath, mode='r', encoding='utf-8') as f_city_coms_all:
+        with open(city_coms_all_file, mode='r', encoding='utf-8') as f_city_coms_all:
             city_coms_data_all = f_city_coms_all.readlines()
             print(count_id)
             for city_coms_start in range(0, count_id, 200000):
-                city_coms_name = od_dir + 'city_coms_{}.csv'.format(city_coms_start)
+                city_coms_name = global_settings.OD_URL + 'city_coms_{}.csv'.format(city_coms_start)
                 city_coms_path = os.path.join(
                     global_settings.OD_URL, city_coms_name)
                 with open(city_coms_path, mode='w', encoding='utf-8') as f_city_coms:
@@ -81,56 +74,6 @@ class CombineCity(object):
                     city_coms_data = city_coms_data_all[city_coms_start+1:city_coms_start+200001]
                     for city_com in city_coms_data:
                         f_city_coms.write(city_com)
-
-    # def city_data_parser(self):
-    #     """Parser of city data.
-
-    #     Parse the data of cities, store the cities in prefecture level city list and county level city list.
-
-    #     Returns:
-    #         A tuple of different type city lists. Each list stores the corresponding cities. For example:
-
-    #         (['北京市', '上海市', '天津市', '吉林市', ...], ['崇文区', '台山市', '广宁县', ])
-    #     """
-
-    #     prefecture_level_city_list = []
-    #     county_level_city_list = []
-    #     city_file = os.path.join(global_settings.CITIES_URL, '{}.json'.format(self.__city_filename))
-
-    #     with open(city_file, mode='r', encoding='utf-8') as city_data_json:
-    #         city_data = json.loads(city_data_json.read())
-
-    #         for (provincial_level_region, city_list) in city_data.items():
-    #             if(provincial_level_region in ['香港特别行政区', '澳门特别行政区', '台湾省']):
-    #                 continue
-    #             # 给直辖市添加region
-    #             if(provincial_level_region in ['北京市', '上海市', '天津市', '重庆市']):
-    #                 city_region_group = [
-    #                     provincial_level_region, provincial_level_region]
-    #                 prefecture_level_city_list.append(city_region_group)
-
-    #             # 给地级市添加region
-    #             if(city_list['prefecture_level_city'] != []):
-    #                 for pre_city in city_list['prefecture_level_city']:
-    #                     city_region_group = [pre_city[1], pre_city[1]]
-    #                     prefecture_level_city_list.append(city_region_group)
-
-    #             # 给县级市添加region
-    #             for cou_city in city_list['county_level_city']:
-    #                 city_region_group = []
-    #                 if(city_list['prefecture_level_city'] == []):
-    #                     city_region_group = [cou_city[1], provincial_level_region]
-    #                 else:
-    #                     # 先指定cou_city以自身为region
-    #                     city_region_group = [cou_city[1], cou_city[1]]
-    #                     # 如果在prefecture level city列表中发现了地级行政区号相同的地级市，再将cou_city的region指定为该地级市
-    #                     for pre_city in city_list['prefecture_level_city']:
-    #                         if(cou_city[0][0:4] == pre_city[0][0:4]):
-    #                             city_region_group = [cou_city[1], pre_city[1]]
-    #                             break
-    #                 county_level_city_list.append(city_region_group)
-
-    #     return (prefecture_level_city_list, county_level_city_list)
 
 def main():
     """

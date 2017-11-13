@@ -96,8 +96,8 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                             path_info['origin_lng'] = city_coms_data[2]
                             path_info['destination_lat'] = city_coms_data[3]
                             path_info['destination_lng'] = city_coms_data[4]
-                            path_info['origin'] = ''
-                            path_info['destination'] = ''
+                            path_info['origin'] = city_coms_data[5]
+                            path_info['destination'] = city_coms_data[6]
                             path_info['origin_region'] = city_coms_data[7]
                             path_info['destination_region'] = city_coms_data[8]
                             path_info['path_json'] = requests.get(
