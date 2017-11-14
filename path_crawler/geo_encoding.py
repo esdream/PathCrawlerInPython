@@ -4,6 +4,12 @@ import requests
 from path_crawler.conf import global_settings
 
 def address_to_coord(encoding_param):
+    """Address to coordinate.
+        Encoding the address to coordinate. The format of input file as follow.
+            id,address,region
+        Args:
+            encoding_param: Parameters of input file and geo-encoding parameters.
+    """
 
     address_file = global_settings.GEO_ENCODING_URL + encoding_param['input_file'] + '.csv'
     coord_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_coord' + '.csv'
