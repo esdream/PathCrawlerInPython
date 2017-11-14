@@ -48,7 +48,10 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
             elif(str(mode) == '2'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin_city varchar(20), destination_city varchar(20), duration_s double, distance_km double, price_yuan double, path varchar(255))')
-            elif(str(mode == '3')):
+            elif(str(mode) == '3'):
+                cursor.execute(
+                    'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), region varchar(20), duration_s double, distance_km double, path varchar(255))')
+            elif(str(mode) == '5'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), duration_s double, distance_km double, taxi_cost double, path varchar(255))')
 
@@ -71,6 +74,11 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
             f_parse_error.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
         elif(str(mode) == '3'):
+            f_crawl_error.write(
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,region\n')
+            f_parse_error.write(
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,region\n')
+        elif(str(mode) == '5'):
             f_crawl_error.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
             f_parse_error.write(
@@ -100,7 +108,18 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
+
             elif(str(mode) == '3'):
+                crawler_thread = crawler.BaiduWalkingCrawlerThread(
+                    thread_id=crawler_thread_id,
+                    od_queue=OD_QUEUE,
+                    path_queue=PATH_QUEUE,
+                    crawl_parameter=crawl_parameter,
+                    error_file=f_crawl_error,
+                    error_lock=ERROR_LOCK
+                )
+
+            elif(str(mode) == '5'):
                 crawler_thread = crawler.AMapTransitCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -135,6 +154,15 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 data_batch=data_batch
             )
         elif(str(mode) == '3'):
+            parser_thread = parser.BaiduWalkingParserThread(
+                thread_id=parser_thread_id,
+                path_queue=PATH_QUEUE,
+                db_name=output_file,
+                error_file=f_parse_error,
+                error_lock=ERROR_LOCK,
+                data_batch=data_batch
+            )
+        elif(str(mode) == '5'):
             parser_thread = parser.AMapDrivingParserThread(
                 thread_id=parser_thread_id,
                 path_queue=PATH_QUEUE,
@@ -169,6 +197,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
         elif(str(mode) == '3'):
             cursor.executemany(
                 'insert into path_data values (?,?,?,?,?,?,?,?,?)', data_batch)
+        elif(str(mode) == '5'):
+            cursor.executemany(
+                'insert into path_data values (?,?,?,?,?,?,?,?,?)', data_batch)
 
         result_data_db.commit()
         data_batch[:] = []
@@ -188,7 +219,8 @@ def main():
     Main function
     """
 
-    mode = input('请选择抓取路径的交通模式（1 百度-驾车模式；2 百度-公交模式；3 高德-驾车模式）：')
+    mode = input('请选择抓取路径的交通模式（1 百度-驾车模式；2 百度-公交模式；3 百度-步行模式；5 高德-驾车模式）：')
+    crawl_parameter = {}
 
     # 百度-驾车模式
     if(str(mode) == '1'):
@@ -210,7 +242,7 @@ def main():
         input_filename = input(
             '待抓取路径的origin-destination文件名（csv文件名，不需要输入文件拓展名）：')
         output_filename = input('输出文件名（不需要输入文件拓展名）：')
-        key = input('请输入开发者密钥：')
+        key = input('百度开发者密钥：')
         coord_type = input('起终点坐标类型（默认为bd09ll）：')
         tactics_incity = input(
             '市内公交策略（默认为0；0 推荐；1 少换乘；2 少步行；3 不坐地铁；4 时间短；5 地铁优先）：')
@@ -227,8 +259,22 @@ def main():
             'key': key
         }
 
+    # 百度-步行模式
+    elif(str(mode) == '3'):
+        input_filename = input(
+            '待抓取路径的origin-destination文件名（csv文件名，不需要输入文件拓展名）：')
+        output_filename = input('输出文件名（不需要输入文件拓展名）：')
+        key = input('百度开发者密钥：')
+        coord_type = input('起终点坐标类型（默认为bd09ll）：')
+        ret_coordtype = input('返回值的坐标类型（默认为bd09ll）：')   
+        crawl_parameter = {
+            'coord_type': coord_type or 'bd09ll',
+            'ret_coordtype': ret_coordtype or 'bd09ll',
+            'key': key
+        }
+
     # 高德-驾车模式
-    elif(str(mode == '3')):
+    elif(str(mode) == '5'):
         input_filename = input('待抓取路径的城市组文件名（csv文件名，不需要输入文件拓展名）：')
         output_filename = input('输出文件名（不需要输入文件拓展名）：')
         
@@ -242,7 +288,7 @@ def main():
             6，不走高速且避免所有收费路段\n \
             7，躲避收费和拥堵，可能存在走高速的情况，并且考虑路况不走拥堵路线，但有可能存在绕路和时间较长\n \
             8，不走高速且躲避收费和拥堵）：')
-        
+
         crawl_parameter = {
             'strategy': strategy or '0',
             'key': key

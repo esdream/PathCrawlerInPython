@@ -174,7 +174,7 @@ class BaiduTransitCrawlerThread(threading.Thread):
                             self._od_queue.put(od_data)
 
 
-# TODO:百度-步行模式抓取线程
+# 百度-步行模式抓取线程
 class BaiduWalkingCrawlerThread(threading.Thread):
     """Walking path crawler.
 
@@ -213,7 +213,7 @@ class BaiduWalkingCrawlerThread(threading.Thread):
                 # url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={key}'.format(
                 #     od_data, **self._crawl_parameter)
 
-                url = 'http://api.map.baidu.com/direction/v1?mode=walking&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[5]}&output=json&ak={key}'.format(
+                url = 'http://api.map.baidu.com/direction/v1?mode=walking&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[5]}&output=json&coord_type={coord_type}&ret_coordtype={ret_coordtype}&ak={key}'.format(
                     od_data, **self._crawl_parameter)
 
                 timeout = 2
