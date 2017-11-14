@@ -21,18 +21,39 @@ $ cd PATHCRAWLERINPYTHON
 $ pip install -r requirements.txt
 ```
 
-### Place Origin-Destination Data
+### Format and Place Origin-Destination Data
 
-Place your OD data in `path_crawler/data/od/` directory.
 You should format your OD data as follow and save it as a **`.csv`** file(**split in comma `,`**).
 
-|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|`origin**`|`destination**`|`origin_region*`|`destination_region*`|
+#### Baidu Map API driving mode
+
+|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|`origin*`|`destination*`|`origin_region`|`destination_region`|
 |---|---|---|---|---|---|---|---|---|
 ||||||||||
 
-*Neccessary if use Baidu Map API driving mode.
+*If you do not set place name as origin and destination, you can set this column value as ''.
 
-**Neccessary if use Baidu Map API driving mode and set place name as origin and destination.
+#### Baidu Map API transit mode
+
+|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|
+|---|---|---|---|---|
+|||||
+
+#### Baidu Map API walking mode**
+
+|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|`region`|
+|---|---|---|---|---|---|
+||||||
+
+**Walking mode can only use inner city.
+
+#### AMap API driving mode
+
+|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|
+|---|---|---|---|---|
+|||||
+
+After formatting, place your OD data in `path_crawler/data/od/` directory.
 
 ### Crawl path data
 

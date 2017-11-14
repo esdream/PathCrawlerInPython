@@ -122,7 +122,7 @@ def amap_address_to_coord(encoding_param):
 
                     parse_timeout -= 1
                     location = response[u'geocodes'][0][u'location']
-                    lat, lng = location.split(',')
+                    lng, lat = location.split(',')
                     level = response[u'geocodes'][0][u'level']
                     f_coord_file.write(
                         '{0[0]},{0[1]},{0[2]},{1},{2},{3}\n'.format(address, lat, lng, level))

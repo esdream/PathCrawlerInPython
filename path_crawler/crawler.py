@@ -210,9 +210,6 @@ class BaiduWalkingCrawlerThread(threading.Thread):
                 print('path {0[0]}: From {0[1]},{0[2]} to {0[3]},{0[4]} (region: {0[5]}) crawled...'.format(
                     od_data))
 
-                # url = 'http://api.map.baidu.com/direction/v2/transit?origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&coord_type={coord_type}&tactics_incity={tactics_incity}&tactics_intercity={tactics_intercity}&trans_type_intercity={trans_type_intercity}&ret_coordtype={ret_coordtype}&ak={key}'.format(
-                #     od_data, **self._crawl_parameter)
-
                 url = 'http://api.map.baidu.com/direction/v1?mode=walking&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[5]}&output=json&coord_type={coord_type}&ret_coordtype={ret_coordtype}&ak={key}'.format(
                     od_data, **self._crawl_parameter)
 

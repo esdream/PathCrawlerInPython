@@ -38,7 +38,7 @@ class CombineCity(object):
 
         county_level_city_list = []
 
-        county_cities_file = global_settings.CITIES_URL + 'formatted_county_coord.csv'
+        county_cities_file = global_settings.CITIES_URL + 'incity.csv'
         with open(county_cities_file, mode='r', encoding='utf-8') as f_county_cities_file:
             county_csv = csv.reader(f_county_cities_file)
             next(county_csv)
