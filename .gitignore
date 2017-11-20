@@ -4,6 +4,8 @@
 # data
 /path_crawler/data/**/*.csv
 /path_crawler/data/**/*.db
+/path_crawler/data/**/*.json
+/path_crawler/data/**/*.py
 /path_crawler/data/api_key/
 
 # Byte-compiled / optimized / DLL files
