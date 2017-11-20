@@ -62,7 +62,7 @@ To crawl path data, run command as follow.
 $ python -m path_crawler.path_spider
 ```
 
-In path crawler, we provide two Web Map API -- Baidu Map API and AMap API(GaoDe Map API), which include 2 transport schemes -- driving and transit. You can choose precise schemes and crawling parameters for your OD data and your purposes. 
+In path crawler, we provide two Web Map API -- Baidu Map API and AMap API(GaoDe Map API), which include 3 transport schemes -- driving, transit and walking. You can choose precise schemes and crawling parameters for your OD data and your purposes. 
 
 After data crawling, the path data will be stored in `path_crawler/data/path_data/` directory.
 
