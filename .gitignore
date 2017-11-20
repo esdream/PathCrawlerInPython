@@ -1,12 +1,10 @@
 # vscode
 .vscode
 
-# city combinations
-/path_crawler/data/*
-
-# exclude gitkeep
-!path_crawler/**/.gitkeep
-!/path_crawler/data/od/.gitkeep
+# data
+/path_crawler/data/**/*.csv
+/path_crawler/data/**/*.db
+/path_crawler/data/api_key/
 
 # Byte-compiled / optimized / DLL files
 /path_crawler/__pycache__/*
