@@ -1,11 +1,11 @@
 # vscode
 .vscode
 
-# exclude gitkeep
-!**/.gitkeep
-
 # city combinations
 /path_crawler/data/*
+
+# exclude gitkeep
+!**/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 /path_crawler/__pycache__/*
