@@ -5,7 +5,7 @@
 /path_crawler/data/*
 
 # exclude gitkeep
-!**/.gitkeep
+!path_crawler/**/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 /path_crawler/__pycache__/*
