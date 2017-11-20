@@ -2,7 +2,7 @@
 .vscode
 
 # exclude gitkeep
-!.gitkeep
+!**/.gitkeep
 
 # city combinations
 /path_crawler/data/*
