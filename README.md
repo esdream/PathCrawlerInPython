@@ -94,9 +94,20 @@ Then place it in `path_crawler/data/geo_encoding/` directory.
 
 Finally, run command below.
 ```shell
-$ python -m path_crawler.geo_encodings
+$ python -m utils.geo_encoding
 ```
 
-#### Transform Coordinates to Addresses
+### File Encoding Convertor
 
-WIP...
+Convert file from other encoding to utf-8.
+
+#### Getting Started
+
+First, put your file in `path_crawler/data/od/` directory.
+
+Then run command below.
+```shell
+$ python -m utils.to_utf8
+```
+
+Your will get a utf-8 format file named `{inputfilename}_utf8.csv` in `path_crawler/data/od/` directory.
