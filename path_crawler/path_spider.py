@@ -92,12 +92,12 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
             f_parse_error.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
 
-        crawler_threads = []
-        crawler_list = ['crawl_thread' + str(num) for num in range(50)]
-        for crawler_thread_id in crawler_list:
 
-            # 根据不同的交通方式启用不同的抓取线程
-            if(str(mode) == '1'):    
+        # 根据不同的交通方式启用不同的抓取线程
+        if(str(mode) == '1'):
+            crawler_threads = []
+            crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+            for crawler_thread_id in crawler_list:
                 crawler_thread = crawler.BaiduDrivingCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -106,8 +106,14 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
-                
-            elif(str(mode) == '2'):
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
+
+        elif(str(mode) == '2'):
+            crawler_threads = []
+            # 百度-公交模式线程数少一些，避免Timeout情况出现
+            crawler_list = ['crawl_thread' + str(num) for num in range(20)]
+            for crawler_thread_id in crawler_list:
                 crawler_thread = crawler.BaiduTransitCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -116,8 +122,14 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
 
-            elif(str(mode) == '3'):
+
+        elif(str(mode) == '3'):
+            crawler_threads = []
+            crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+            for crawler_thread_id in crawler_list:
                 crawler_thread = crawler.BaiduWalkingCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -126,8 +138,13 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
 
-            elif(str(mode) == '4'):
+        elif(str(mode) == '4'):
+            crawler_threads = []
+            crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+            for crawler_thread_id in crawler_list:
                 crawler_thread = crawler.BaiduRidingCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -136,8 +153,14 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
 
-            elif(str(mode) == '5'):
+
+        elif(str(mode) == '5'):
+            crawler_threads = []
+            crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+            for crawler_thread_id in crawler_list:
                 crawler_thread = crawler.AMapTransitCrawlerThread(
                     thread_id=crawler_thread_id,
                     od_queue=OD_QUEUE,
@@ -146,8 +169,8 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                     error_file=f_crawl_error,
                     error_lock=ERROR_LOCK
                 )
-            crawler_thread.start()
-            crawler_threads.append(crawler_thread)
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
 
         data_batch = []
         parser_thread_id = 'parser_thread'

@@ -67,9 +67,9 @@ class BaiduDrivingParserThread(threading.Thread):
                         if(i == num_of_steps - 1):
                             path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
                             break
-                        path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(
-                            ';')
-                        path_string += ";".join(path_list[0:-1]) + ';'
+                        # path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'].split(
+                        #     ';')
+                        path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'] + ';'
                     result['path'] = path_string
 
                     print('From {origin}#{origin_lat},{origin_lng}(region: {origin_region}) to {destination}#{destination_lat},{destination_lng}(region: {destination_region}) parse succeed: duration: {driving_duration}, distance: {distance_km}'.format(
@@ -139,7 +139,7 @@ class BaiduTransitParserThread(threading.Thread):
                     result['id'] = path_info['od_id']
                     result['origin_lat'] = path_info['origin_lat']
                     result['origin_lng'] = path_info['origin_lng']
-                    result['destination_lat'] = path_info['destination_lng']
+                    result['destination_lat'] = path_info['destination_lat']
                     result['destination_lng'] = path_info['destination_lng']
                     result['origin_city'] = path_info['path_json'][u'result'][u'origin'][u'city_name']
                     result['destination_city'] = path_info['path_json'][u'result'][u'destination'][u'city_name']
@@ -164,9 +164,9 @@ class BaiduTransitParserThread(threading.Thread):
                                 path_string = path_string + path_info['path_json'][
                                     u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
                                 continue
-                            path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'].split(
-                                ';')
-                            path_string += ";".join(path_list[0:-1]) + ';'
+                            # path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'].split(
+                            #     ';')
+                            path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
                     result['path'] = path_string
 
                     print('From {origin_lat},{origin_lng}(region: {origin_city}) to {destination_lat},{destination_lng}(region: {destination_city}) parse succeed: duration: {duration_s}, distance: {distance_km}'.format(**result))
@@ -420,9 +420,9 @@ class AMapDrivingParserThread(threading.Thread):
                         if(i == num_of_steps - 1):
                             path_string += path_info['path_json'][u'route'][u'paths'][0][u'steps'][i][u'polyline']
                             break
-                        path_list = path_info['path_json'][u'route'][u'paths'][0][u'steps'][i][u'polyline'].split(
-                            ';')
-                        path_string += ";".join(path_list[0:-1]) + ';'
+                        # path_list = path_info['path_json'][u'route'][u'paths'][0][u'steps'][i][u'polyline'].split(
+                        #     ';')
+                        path_string += path_info['path_json'][u'route'][u'paths'][0][u'steps'][i][u'polyline'] + ';'
                     result['path'] = path_string
 
                     print('From {origin_lat},{origin_lng} to {destination_lat},{destination_lng} parse succeed: duration: {duration_s}, distance: {distance_km}'.format(**result))

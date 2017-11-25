@@ -6,6 +6,7 @@ Provide many way to crawl different data.
 
 import time
 import threading
+import random
 import requests
 
 # 百度-驾车模式抓取线程
@@ -157,6 +158,8 @@ class BaiduTransitCrawlerThread(threading.Thread):
                     try:
                         if(self._path_queue.full()):
                             time.sleep(8)
+
+                        time.sleep(random.random())
 
                         path_info = {}
                         path_info['od_id'] = od_data[0]
