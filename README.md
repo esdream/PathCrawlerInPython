@@ -47,6 +47,12 @@ You should format your OD data as follow and save it as a **`.csv`** file(**spli
 
 **Walking mode can only use inner city.
 
+#### Baidu Map API riding mode
+
+|`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|
+|---|---|---|---|---|---|
+||||||
+
 #### AMap API driving mode
 
 |`id`|`origin_lat`|`origin_lng`|`destination_lat`|`destination_lng`|
