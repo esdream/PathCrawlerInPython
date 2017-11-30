@@ -151,22 +151,26 @@ class BaiduTransitParserThread(threading.Thread):
                     # 解析路径
                     path_string = ''
 
-                    num_of_steps = len(
-                        path_info['path_json'][u'result'][u'routes'][0][u'steps'])
+                    num_of_steps = len(path_info['path_json'][u'result'][u'routes'][0][u'steps'])
+
                     for i in range(num_of_steps):
-                        num_of_substeps = len(
-                            path_info['path_json'][u'result'][u'routes'][0][u'steps'][i])
-                        for j in range(num_of_substeps):
-                            if(i == num_of_steps - 1 and j == num_of_substeps - 1):
-                                path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path']
-                                continue
-                            elif(i != num_of_steps - 1 and j == num_of_substeps - 1):
-                                path_string = path_string + path_info['path_json'][
-                                    u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
-                                continue
-                            # path_list = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'].split(
-                            #     ';')
-                            path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
+                        # num_of_substeps = len(
+                        #     path_info['path_json'][u'result'][u'routes'][0][u'steps'][i])
+                        # for j in range(num_of_substeps):
+                        #     if(i == num_of_steps - 1 and j == num_of_substeps - 1):
+                        #         path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path']
+                        #         continue
+                        #     elif(i != num_of_steps - 1 and j == num_of_substeps - 1):
+                        #         path_string = path_string + path_info['path_json'][
+                        #             u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
+                        #         continue
+                        #     path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][j][u'path'] + ';'
+
+                        if(i == num_of_steps - 1):
+                            path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][0][u'path']
+                            break
+                        path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][0][u'path'] + ';'
+
                     result['path'] = path_string
 
                     print('From {origin_lat},{origin_lng}(region: {origin_city}) to {destination_lat},{destination_lng}(region: {destination_city}) parse succeed: duration: {duration_s}, distance: {distance_km}'.format(**result))
