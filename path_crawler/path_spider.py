@@ -22,8 +22,11 @@ ERROR_LOCK = threading.Lock()
 def run_spider(mode, input_filename, output_filename, crawl_parameter):
     start = time.time()
     # 默认输入文件类型为.csv，默认输出文件类型为.db
-    input_file = global_settings.OD_URL + input_filename + '.csv'
-    output_file = global_settings.PATH_DATA_URL + output_filename + '.db'
+    input_file = os.path.join(global_settings.OD_URL, input_filename + '.csv')
+    output_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '.db')
+    # 子路径输出文件。目前只在公交模式中创建
+    subpath_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '_subpath.db')
+
     # 判断待抓取的OD文件是否存在
     if(not os.path.exists(input_file)):
         print('The OD file is not existed!')
@@ -37,17 +40,25 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
     data_reader.read_data()
 
     result_data_db = sqlite3.connect(output_file)
-    with result_data_db:
-        cursor = result_data_db.cursor()
-        try:
+    subpath_db = sqlite3.connect(subpath_file)
 
+    cursor = None
+    sub_cursor = None
+
+    with result_data_db, subpath_db:
+        cursor = result_data_db.cursor()
+        sub_cursor = subpath_db.cursor()
+        try:
             # 根据不同的交通方式创建不同的数据库格式
             if(str(mode) == '1'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin varchar(20), destination varchar(20), origin_region varchar(20), destination_region varchar(20), duration_s double, distance_km double, path varchar(255))')
             elif(str(mode) == '2'):
                 cursor.execute(
-                    'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin_city varchar(20), destination_city varchar(20), duration_s double, distance_km double, price_yuan double, path varchar(255))')
+                    'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin_city varchar(20), destination_city varchar(20), duration_s double, distance_km double, price_yuan double)')
+                sub_cursor.execute(
+                    'create table subpath(route_id int, step_num int, start_lat varchar(20), start_lng varchar(20), end_lat varchar(20), end_lng varchar(20), sub_s double, sub_km double, vehicle_info int, traffic_cond int, path varchar(255))')
+                
             elif(str(mode) == '3'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), region varchar(20), duration_s double, distance_km double, path varchar(255))')
@@ -60,6 +71,7 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
 
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
+            return
 
     parse_error_file = global_settings.PARSE_ERROR_URL + output_filename + '.csv'
     crawl_error_file = global_settings.CRAWL_ERROR_URL + output_filename + '.csv'
@@ -172,7 +184,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 crawler_thread.start()
                 crawler_threads.append(crawler_thread)
 
+        # 创建数据块列表，用于在内存中临时存储parse完成的数据，批量insert至数据库
         data_batch = []
+        subpath_batch = []
         parser_thread_id = 'parser_thread'
 
         # 根据不同的交通方式启动不同的解析线程
@@ -191,9 +205,11 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 thread_id=parser_thread_id,
                 path_queue=PATH_QUEUE,
                 db_name=output_file,
+                subpathdb_name=subpath_file,
                 error_file=f_parse_error,
                 error_lock=ERROR_LOCK,
-                data_batch=data_batch
+                data_batch=data_batch,
+                subpath_batch=subpath_batch
             )
 
         elif(str(mode) == '3'):
@@ -247,7 +263,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?,?)', data_batch)
         elif(str(mode) == '2'):
             cursor.executemany(
-                'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?)', data_batch)
+                'insert into path_data values (?,?,?,?,?,?,?,?,?,?)', data_batch)
+            sub_cursor.executemany(
+                'insert into subpath values (?,?,?,?,?,?,?,?,?,?,?)', subpath_batch)
         elif(str(mode) == '3'):
             cursor.executemany(
                 'insert into path_data values (?,?,?,?,?,?,?,?,?)', data_batch)
@@ -259,7 +277,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 'insert into path_data values (?,?,?,?,?,?,?,?,?)', data_batch)
 
         result_data_db.commit()
+        subpath_db.commit()
         data_batch[:] = []
+        subpath_batch[:] = []
         print('Exiting Main Thread')
         with ERROR_LOCK:
             f_crawl_error.close()
