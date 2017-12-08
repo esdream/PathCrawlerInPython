@@ -57,7 +57,7 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                                 time.sleep(8)
 
                             path_info = {}
-                            path_info['city_com_num'] = city_coms_data[0]
+                            path_info['route_id'] = city_coms_data[0]
                             path_info['origin_lat'] =''
                             path_info['origin_lng'] = ''
                             path_info['destination_lat'] = ''
@@ -92,7 +92,7 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                                 time.sleep(8)
 
                             path_info = {}
-                            path_info['city_com_num'] = city_coms_data[0]
+                            path_info['route_id'] = city_coms_data[0]
                             path_info['origin_lat'] = city_coms_data[1]
                             path_info['origin_lng'] = city_coms_data[2]
                             path_info['destination_lat'] = city_coms_data[3]
