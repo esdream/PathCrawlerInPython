@@ -23,9 +23,9 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
     start = time.time()
     # 默认输入文件类型为.csv，默认输出文件类型为.db
     input_file = os.path.join(global_settings.OD_URL, input_filename + '.csv')
-    output_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '.db')
+    output_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '_routes.db')
     # 子路径输出文件。目前只在百度驾车与百度公交模式中创建
-    subpath_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '_subpath.db')
+    subpath_file = os.path.join(global_settings.PATH_DATA_URL, output_filename + '_subpaths.db')
 
     # 判断待抓取的OD文件是否存在
     if(not os.path.exists(input_file)):
