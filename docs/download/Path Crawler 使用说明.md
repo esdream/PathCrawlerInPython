@@ -72,7 +72,7 @@ pip install requests
 
 你也可以使用其他工具或文本编辑器创建OD文件，格式要求同上。
 
-## 抓取路径数据
+## 抓取路径数据工具使用方法
 
 格式化完成后，将OD文件放置到`path_crawler/data/od/`目录中。然后打开命令行工具，进入PathCrawlerInPython目录，输入以下命令：
 
@@ -145,7 +145,7 @@ Path Crawler中提供了两种Web地图API——百度API和高德API，提供�
 
 转换地址名称与坐标。
 
-#### 将地址转换为坐标
+#### 使用方法
 
 首先，将你的地址数据按照以下格式存储为**`.csv`文件（以UTF-8编码）**，存储时包含表头。
 
@@ -167,7 +167,7 @@ python -m utils.geo_encodings
 
 将其他编码文件转换成UTF-8编码。
 
-#### 编码转换
+#### 使用方法
 
 首先将你的`.csv`文件放置到`path_crawler/data/od_data/`目录中。
 
@@ -183,6 +183,8 @@ python -m utils.to_utf8
 
 在指定范围内搜索POI数据。POI搜索工具提供了**关键字搜索、周边搜索、多边形搜索**三种搜索方式。你可以在以下链接中下载不同搜索方式对应的源数据格式。这是一个Excel文件，每个sheet中是**该sheet名称对应的搜索方式的源数据格式与样例数据**。
 
+[POI搜索工具源数据格式](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/poi_format.xlsx)
+
 你需要将你的POI数据格式化为**按逗号隔开的`.csv`格式文件**。在Excel中，你可以通过“导出”实现这一功能。注意，**POI文件导出时一定要包含表头**！
 
 强烈建议将POI文件转换成**UTF-8**编码。用EXCEL导出的`.csv`文件是GB2312编码，你可以使用Path Crawler提供的[编码转换工具](#文件编码格式转换工具)进行转换。
@@ -193,8 +195,8 @@ python -m utils.to_utf8
 
 + id：搜索编号。
 + keywords：关键字，多个关键字用"|"分割。
-+ types：查询POI类型。多个类型用"|"分割。可以使用分类代码或汉字，需要严格按照高德地图POI分类编码表输入。分类代码由六位数字组成，一共分为三个部分，前两个数字代表大类；中间两个数字代表中类；最后两个数字代表小类。若指定了某个大类，则所属的中类、小类都会被显示。
-+ city：查询城市。可以用城市中文、中文全拼、citycode、adcode。强烈*建议使用**adcode**，参见高德地图城市编码表。
++ types：查询POI类型。多个类型用"|"分割。可以使用分类代码或汉字，需要严格按照[高德地图POI分类编码表](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BEAPI%20POI%E5%88%86%E7%B1%BB%E7%BC%96%E7%A0%81%E8%A1%A8.xlsx)输入。分类代码由六位数字组成，一共分为三个部分，前两个数字代表大类；中间两个数字代表中类；最后两个数字代表小类。若指定了某个大类，则所属的中类、小类都会被显示。
++ city：查询城市。可以用城市中文、中文全拼、citycode、adcode。强烈*建议使用**adcode**，参见[高德地图城市编码表](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BEAPI%20%E5%9F%8E%E5%B8%82%E7%BC%96%E7%A0%81%E8%A1%A8.xlsx)。
 
 #### 周边搜索
 
@@ -207,3 +209,15 @@ python -m utils.to_utf8
 
 + id、keywords、types、city：同关键字搜索。
 + polygon：多边形经纬度坐标对。lng, lat格式，经度在前，纬度在后，坐标对用"|"分割。多边形为矩形时，可传入左上右下两顶点坐标对；其他情况下首尾坐标对需相同。
+
+#### 使用方法
+
+首先将你的`.csv`文件放置到`path_crawler/data/poi/`目录中。
+
+然后在命令行运行以下命令：
+
+```shell
+python -m utils.search_poi
+```
+
+运行完成后，编码成UTF-8格式的文件存储在`path_crawler/data/poi/`目录中，是一个`.db`文件，其中id相同的行是同一次搜索中得到的结果，使用sqlitestudio打开并导出即可。
