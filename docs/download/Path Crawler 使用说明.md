@@ -181,7 +181,11 @@ python -m utils.to_utf8
 
 ### POI搜索工具
 
-在指定范围内搜索POI数据。POI搜索工具提供了**关键字搜索、周边搜索、多边形搜索**三种搜索方式。你可以在以下链接中下载不同搜索方式对应的源数据格式。这是一个Excel文件，每个sheet中是**该sheet名称对应的搜索方式的源数据格式与样例数据**。
+在指定范围内搜索POI数据。
+
+#### 源数据处理
+
+POI搜索工具提供了**关键字搜索、周边搜索、多边形搜索**三种搜索方式。你可以在以下链接中下载不同搜索方式对应的源数据格式。这是一个Excel文件，每个sheet中是**该sheet名称对应的搜索方式的源数据格式与样例数据**。
 
 [POI搜索工具源数据格式](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/poi_format.xlsx)
 
@@ -191,21 +195,21 @@ python -m utils.to_utf8
 
 不同搜索方式源数据参数如下。
 
-#### 关键字搜索
+##### 关键字搜索
 
 + id：搜索编号。
 + keywords：关键字，多个关键字用"|"分割。
 + types：查询POI类型。多个类型用"|"分割。可以使用分类代码或汉字，需要严格按照[高德地图POI分类编码表](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BEAPI%20POI%E5%88%86%E7%B1%BB%E7%BC%96%E7%A0%81%E8%A1%A8.xlsx)输入。分类代码由六位数字组成，一共分为三个部分，前两个数字代表大类；中间两个数字代表中类；最后两个数字代表小类。若指定了某个大类，则所属的中类、小类都会被显示。
 + city：查询城市。可以用城市中文、中文全拼、citycode、adcode。强烈*建议使用**adcode**，参见[高德地图城市编码表](https://github.com/esdream/PathCrawlerInPython/raw/master/docs/download/%E9%AB%98%E5%BE%B7%E5%9C%B0%E5%9B%BEAPI%20%E5%9F%8E%E5%B8%82%E7%BC%96%E7%A0%81%E8%A1%A8.xlsx)。
 
-#### 周边搜索
+##### 周边搜索
 
 + id、keywords、types、city：同关键字搜索。
 + location：中心点坐标。lng, lat 格式，经度在前，纬度在后。
 + radius：查询半径，取值范围0 - 50000，单位：米。
 + sortrule：排序规则，按距离排序该字段设为distance，综合排序设为weight。
 
-#### 多边形搜索
+##### 多边形搜索
 
 + id、keywords、types、city：同关键字搜索。
 + polygon：多边形经纬度坐标对。lng, lat格式，经度在前，纬度在后，坐标对用"|"分割。多边形为矩形时，可传入左上右下两顶点坐标对；其他情况下首尾坐标对需相同。
@@ -221,3 +225,27 @@ python -m utils.search_poi
 ```
 
 运行完成后，编码成UTF-8格式的文件存储在`path_crawler/data/poi/`目录中，是一个`.db`文件，其中id相同的行是同一次搜索中得到的结果，使用sqlitestudio打开并导出即可。
+
+### 坐标转换工具
+
+将源坐标转换成百度地图采用的经纬度坐标。
+
+#### 使用方法
+
+将你的源坐标文件格式化成以下格式并存储在`.csv`文件中.
+
+```
+id,lat,lng
+1,lat1,lng1
+2,lat2,lng2
+```
+
+然后将格式化后的源坐标文件放置在`path_crawler/data/od_data/`目录中。运行以下命令：
+
+```powershell
+python -m utils.geoconv
+```
+
+运行完成后，结果文件存储在`path_crawler/data/od_data/`中，以`输入文件名_conv.csv`命名。
+
+抓取错误文件和解析错误文件分配存储在`path_crawler/data/crawl_error/`和`path_crawler/data/parse_error/`中，请分别对他们进行单独处理。
