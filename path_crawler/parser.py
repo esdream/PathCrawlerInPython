@@ -21,7 +21,6 @@ class BaiduDrivingParserThread(threading.Thread):
         self._thread_id = parser_args['thread_id']
         self._path_queue = parser_args['path_queue']
         self._db_name = parser_args['db_name']
-        self._subpathdb_name = parser_args['subpathdb_name']
         self._error_file = parser_args['error_file']
         self._error_lock = parser_args['error_lock']
         self._data_batch = parser_args['data_batch']
@@ -101,18 +100,18 @@ class BaiduDrivingParserThread(threading.Thread):
 
                     if(len(self._data_batch) == 50):
                         path_data_db = sqlite3.connect(self._db_name)
-                        subpath_db = sqlite3.connect(self._subpathdb_name)
+                        # subpath_db = sqlite3.connect(self._subpathdb_name)
 
                         with path_data_db:
-                            # cursor = path_data_db.cursor()
+
                             path_data_db.executemany(
                                 'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?)', self._data_batch)
                             path_data_db.commit()
                             self._data_batch[:] = []
 
-                            subpath_db.executemany(
+                            path_data_db.executemany(
                                 'insert into subpath values (?,?,?,?,?,?,?,?,?,?,?,?)', self._subpath_batch)
-                            subpath_db.commit()
+                            path_data_db.commit()
                             self._subpath_batch[:] = []
 
                     self._path_queue.task_done()
@@ -140,7 +139,6 @@ class BaiduTransitParserThread(threading.Thread):
         self._thread_id = parser_args['thread_id']
         self._path_queue = parser_args['path_queue']
         self._db_name = parser_args['db_name']
-        self._subpathdb_name = parser_args['subpathdb_name']
         self._error_file = parser_args['error_file']
         self._error_lock = parser_args['error_lock']
         self._data_batch = parser_args['data_batch']
@@ -228,18 +226,16 @@ class BaiduTransitParserThread(threading.Thread):
 
                     if(len(self._data_batch) == 50):
                         path_data_db = sqlite3.connect(self._db_name)
-                        subpath_db = sqlite3.connect(self._subpathdb_name)
 
-                        with path_data_db, subpath_db:
-                            # cursor = path_data_db.cursor()
+                        with path_data_db:
                             path_data_db.executemany(
                                 'insert into path_data values (?,?,?,?,?,?,?,?,?,?)', self._data_batch)
                             path_data_db.commit()
                             self._data_batch[:] = []
 
-                            subpath_db.executemany(
+                            path_data_db.executemany(
                                 'insert into subpath values (?,?,?,?,?,?,?,?,?,?,?)', self._subpath_batch)
-                            subpath_db.commit()
+                            path_data_db.commit()
                             self._subpath_batch[:] = []
 
                     self._path_queue.task_done()
