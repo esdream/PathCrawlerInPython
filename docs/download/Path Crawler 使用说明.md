@@ -158,7 +158,7 @@ Path Crawler中提供了两种Web地图API——百度API和高德API，提供�
 最后打开命令行工具，进入PathCrawlerInPython目录，运行以下命令：
 
 ```shell
-python -m utils.geo_encodings
+python -m utils.geo_encoding
 ```
 
 运行完成后，编码完的数据存储在`path_crawler/data/geo_encoding/`中。
