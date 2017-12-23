@@ -70,6 +70,8 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
             elif(str(mode) == '5'):
                 cursor.execute(
                     'create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), duration_s double, distance_km double, taxi_cost double, path varchar(255))')
+            elif(str(mode) == '6'):
+                cursor.execute('create table path_data(id int primary key, origin_lat varchar(20), origin_lng varchar(20), destination_lat varchar(20), destination_lng varchar(20), origin_city varchar(20), des_city varchar(20), duration_s double, distance_km double, transit_cost double, taxi_cost double)')
 
         except Exception as create_db_error:
             print('create database error: {}'.format(create_db_error))
@@ -105,7 +107,11 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
             f_parse_error.write(
                 'id,origin_lat,origin_lng,destination_lat,destination_lng\n')
-
+        elif(str(mode) == '6'):
+            f_crawl_error.write(
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,origin_city,des_city\n')
+            f_parse_error.write(
+                'id,origin_lat,origin_lng,destination_lat,destination_lng,origin_city,des_city\n')
 
         # 根据不同的交通方式启用不同的抓取线程
         if(str(mode) == '1'):
@@ -172,6 +178,21 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
 
 
         elif(str(mode) == '5'):
+            crawler_threads = []
+            crawler_list = ['crawl_thread' + str(num) for num in range(50)]
+            for crawler_thread_id in crawler_list:
+                crawler_thread = crawler.AMapDrivingCrawlerThread(
+                    thread_id=crawler_thread_id,
+                    od_queue=OD_QUEUE,
+                    path_queue=PATH_QUEUE,
+                    crawl_parameter=crawl_parameter,
+                    error_file=f_crawl_error,
+                    error_lock=ERROR_LOCK
+                )
+                crawler_thread.start()
+                crawler_threads.append(crawler_thread)
+
+        elif(str(mode) == '6'):
             crawler_threads = []
             crawler_list = ['crawl_thread' + str(num) for num in range(50)]
             for crawler_thread_id in crawler_list:
@@ -243,6 +264,17 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
                 error_lock=ERROR_LOCK,
                 data_batch=data_batch
             )
+        
+        elif(str(mode) == '6'):
+            parser_thread = parser.AMapTransitParserThread(
+                thread_id=parser_thread_id,
+                path_queue=PATH_QUEUE,
+                db_name=output_file,
+                error_file=f_parse_error,
+                error_lock=ERROR_LOCK,
+                data_batch=data_batch
+            )
+
         parser_thread.start()
 
         # 等待OD队列清空
@@ -279,6 +311,10 @@ def run_spider(mode, input_filename, output_filename, crawl_parameter):
         elif(str(mode) == '5'):
             cursor.executemany(
                 'insert into path_data values (?,?,?,?,?,?,?,?,?)', data_batch)
+        elif(str(mode) == '6'):
+            cursor.executemany(
+                'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?)', data_batch)
+
 
         result_data_db.commit()
         data_batch[:] = []
@@ -299,7 +335,7 @@ def main():
     Main function
     """
 
-    mode = input('请选择抓取路径的交通模式（1 百度-驾车模式；2 百度-公交模式；3 百度-步行模式；4 百度-骑行模式；5 高德-驾车模式）：')
+    mode = input('请选择抓取路径的交通模式（1 百度-驾车模式；2 百度-公交模式；3 百度-步行模式；4 百度-骑行模式；5 高德-驾车模式；6 高德-公交模式）：')
     crawl_parameter = {}
 
     # 百度-驾车模式
@@ -385,6 +421,30 @@ def main():
 
         crawl_parameter = {
             'strategy': strategy or '0',
+            'key': key
+        }
+
+    # 高德-公交模式
+    elif(str(mode) == '6'):
+        input_filename = input('待抓取路径的城市组文件名（csv文件名，不需要输入文件拓展名）：')
+        output_filename = input('输出文件名（不需要输入文件拓展名）：')
+
+        key = input('高德开发者密钥：')
+        strategy = input('请选择公交换乘策略（默认为0）（\n \
+            0：最快捷模式\n \
+            1：最经济模式\n \
+            2：最少换乘模式\n \
+            3：最少步行模式\n \
+            5：不乘地铁模式\n \
+        ）：')
+        nightflag = input('是否选择夜班车（默认为0）（\n \
+            0：不坐夜班车\n \
+            1：坐夜班车\n \
+        ）：')
+
+        crawl_parameter = {
+            'strategy': strategy or '0',
+            'nightflag': nightflag or '0',
             'key': key
         }
 
