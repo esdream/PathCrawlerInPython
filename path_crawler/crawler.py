@@ -171,7 +171,7 @@ class BaiduTransitCrawlerThread(threading.Thread):
                         path_info['destination_city'] = od_data[6]
                         path_info['path_json'] = requests.get(url, timeout=5).json()
                         self._path_queue.put(path_info)
-                        print('path {0[0]}: From {0[1]},{0[2]}(0[5]) to {0[3]},{0[4]}(0[6]) crawl succeed.'.format(
+                        print('path {0[0]}: From {0[1]},{0[2]}({0[5]}) to {0[3]},{0[4]}({0[6]}) crawl succeed.'.format(
                             od_data))
                         break
                     except Exception as crawl_error:
