@@ -145,7 +145,7 @@ class BaiduTransitCrawlerThread(threading.Thread):
                 break
             else:
                 od_data = self._od_queue.get()
-                # 源文件格式应为：id,origin_lat,origin_lng,destination_lat,destination_lng
+                # 源文件格式应为：id,origin_lat,origin_lng,destination_lat,destination_lng,origin_city,des_city
                 print('path {0[0]}: From {0[1]},{0[2]} to {0[3]},{0[4]} crawled...'.format(
                     od_data))
 
@@ -167,9 +167,12 @@ class BaiduTransitCrawlerThread(threading.Thread):
                         path_info['origin_lng'] = od_data[2]
                         path_info['destination_lat'] = od_data[3]
                         path_info['destination_lng'] = od_data[4]
+                        path_info['origin_city'] = od_data[5]
+                        path_info['destination_city'] = od_data[6]
                         path_info['path_json'] = requests.get(url, timeout=5).json()
                         self._path_queue.put(path_info)
-                        print('path {0[0]}: From {0[1]},{0[2]} to {0[3]},{0[4]} crawl succeed.'.format(od_data))
+                        print('path {0[0]}: From {0[1]},{0[2]}(0[5]) to {0[3]},{0[4]}(0[6]) crawl succeed.'.format(
+                            od_data))
                         break
                     except Exception as crawl_error:
                         if(timeout == 0):

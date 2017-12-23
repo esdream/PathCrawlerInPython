@@ -169,8 +169,10 @@ class BaiduTransitParserThread(threading.Thread):
                     result['origin_lng'] = path_info['origin_lng']
                     result['destination_lat'] = path_info['destination_lat']
                     result['destination_lng'] = path_info['destination_lng']
-                    result['origin_city'] = path_info['path_json'][u'result'][u'origin'][u'city_name']
-                    result['destination_city'] = path_info['path_json'][u'result'][u'destination'][u'city_name']
+                    result['origin_city'] = path_info['origin_city']
+                    result['destination_city'] = path_info['destination_city']
+                    # result['origin_city'] = path_info[['path_json'][u'result'][u'origin'][u'city_name']]
+                    # result['destination_city'] = path_info['path_json'][u'result'][u'destination'][u'city_name']
                     
                     result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'distance'] / 1000
                     result['duration_s'] = path_info['path_json'][u'result'][u'routes'][0][u'duration']
@@ -244,7 +246,7 @@ class BaiduTransitParserThread(threading.Thread):
             except Exception as parser_error:
                 with self._error_lock:
                     self._error_file.write(
-                        '{od_id},{origin_lat},{origin_lng},{destination_lat},{destination_lng}\n'.format(**path_info))
+                        '{od_id},{origin_lat},{origin_lng},{destination_lat},{destination_lng},{origin_city},{destination_city}\n'.format(**path_info))
                     print('Parse path {} failed!'.format(
                         path_info['od_id']))
                     print(parser_error)
