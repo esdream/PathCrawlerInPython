@@ -42,7 +42,7 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                 break
             else:
                 # 选择使用地点名称抓取
-                if(self._crawl_parameter['coord_or_name'] == 1):
+                if(str(self._crawl_parameter['coord_or_name']) == '1'):
                     city_coms_data = self._od_queue.get()
                     print('path {0[0]}: From {0[5]}(region {0[7]}) to {0[6]}(region {0[8]}) crawled...'.format(
                         city_coms_data))
@@ -77,7 +77,7 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                                 self._od_queue.put(city_coms_data)
                 
                 # 选择使用经纬度抓取
-                else:
+                elif(str(self._crawl_parameter['coord_or_name']) == '2'):
                     city_coms_data = self._od_queue.get()
                     print('path {0[0]}: From {0[1]}{0[2]}(region {0[7]}) to {0[3]}{0[4]}(region {0[8]}) crawled...'.format(
                         city_coms_data))
@@ -440,3 +440,108 @@ class AMapTransitCrawlerThread(threading.Thread):
                         if(timeout == 0):
                             print(crawl_error)
                             self._od_queue.put(od_data)
+
+
+# 百度-公交模式1.0抓取线程
+class BaiduTransitFirstVersionCrawlerThread(threading.Thread):
+    """Transit path crawler.
+
+    Crawl the path using transit mode(route planning v1.0).
+    """
+
+    def __init__(self, **crawler_args):
+        threading.Thread.__init__(self)
+        self._thread_id = crawler_args['thread_id']
+        self._od_queue = crawler_args['od_queue']
+        self._path_queue = crawler_args['path_queue']
+        self._error_file = crawler_args['error_file']
+        self._error_lock = crawler_args['error_lock']
+        self._crawl_parameter = crawler_args['crawl_parameter']
+
+    def run(self):
+        print('No.{} crawler start...'.format(self._thread_id))
+        self.__baidu_transit_first_path_crawler()
+        print('No.{} crawler finished!'.format(self._thread_id))
+
+    def __baidu_transit_first_path_crawler(self):
+        """Crawler function.
+
+        Send requests to Baidu Map and get the transit mode path data.
+        """
+        # 源文件格式应为：id,origin_lat,origin_lng,destination_lat,destination_lng,origin,destination,origin_region,destination_region
+
+        while True:
+            if(self._od_queue.empty()):
+                break
+            else:
+                # 选择使用地点名称抓取
+                if(str(self._crawl_parameter['coord_or_name']) == '1'):
+                    city_coms_data = self._od_queue.get()
+                    print('path {0[0]}: From {0[5]}(region {0[7]}) to {0[6]}(region {0[8]}) crawled...'.format(
+                        city_coms_data))
+                    url = 'http://api.map.baidu.com/direction/v1?mode=transit&origin={0[5]}&destination={0[6]}&region={0[7]}&output=json&ak={key}'.format(
+                        city_coms_data, **self._crawl_parameter)
+
+                    timeout = 2
+                    while(timeout > 0):
+                        timeout -= 1
+                        try:
+                            if(self._path_queue.full()):
+                                time.sleep(8)
+
+                            path_info = {}
+                            path_info['route_id'] = city_coms_data[0]
+                            path_info['origin_lat'] = city_coms_data[1]
+                            path_info['origin_lng'] = city_coms_data[2]
+                            path_info['destination_lat'] = city_coms_data[3]
+                            path_info['destination_lng'] = city_coms_data[4]
+                            path_info['origin'] = city_coms_data[5]
+                            path_info['destination'] = city_coms_data[6]
+                            path_info['origin_region'] = city_coms_data[7]
+                            path_info['destination_region'] = city_coms_data[8]
+                            path_info['path_json'] = requests.get(
+                                url, timeout=5).json()
+                            self._path_queue.put(path_info)
+                            print('path {0[0]}: From {0[5]}(region {0[7]}) to {0[6]}(region {0[8]}) crawl succeed.'.format(
+                                city_coms_data))
+                            break
+                        except Exception as crawl_error:
+                            if(timeout == 0):
+                                print(crawl_error)
+                                self._od_queue.put(city_coms_data)
+
+                # 选择使用经纬度抓取
+                elif(str(self._crawl_parameter['coord_or_name']) == '2'):
+                    city_coms_data = self._od_queue.get()
+                    print('path {0[0]}: From {0[1]}{0[2]}(region {0[7]}) to {0[3]}{0[4]}(region {0[8]}) crawled...'.format(
+                        city_coms_data))
+                    url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[7]}&output=json&ak={key}'.format(
+                        city_coms_data, **self._crawl_parameter)
+
+                    timeout = 2
+                    while(timeout > 0):
+                        timeout -= 1
+                        try:
+                            if(self._path_queue.full()):
+                                time.sleep(8)
+
+                            path_info = {}
+                            path_info['route_id'] = city_coms_data[0]
+                            path_info['origin_lat'] = city_coms_data[1]
+                            path_info['origin_lng'] = city_coms_data[2]
+                            path_info['destination_lat'] = city_coms_data[3]
+                            path_info['destination_lng'] = city_coms_data[4]
+                            path_info['origin'] = city_coms_data[5]
+                            path_info['destination'] = city_coms_data[6]
+                            path_info['origin_region'] = city_coms_data[7]
+                            path_info['destination_region'] = city_coms_data[8]
+                            path_info['path_json'] = requests.get(
+                                url, timeout=5).json()
+                            self._path_queue.put(path_info)
+                            print('path {0[0]}: From {0[1]}{0[2]}(region {0[7]}) to {0[3]}{0[4]}(region {0[8]}) crawl succeed.'.format(
+                                city_coms_data))
+                            break
+                        except Exception as crawl_error:
+                            if(timeout == 0):
+                                print(crawl_error)
+                                self._od_queue.put(city_coms_data)
