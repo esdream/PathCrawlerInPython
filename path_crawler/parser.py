@@ -214,13 +214,6 @@ class BaiduTransitParserThread(threading.Thread):
                             subpath_result['route_id'], subpath_result['step_num'], subpath_result['start_lat'], subpath_result['start_lng'], subpath_result['end_lat'], subpath_result['end_lng'], subpath_result['sub_s'], subpath_result['sub_km'], subpath_result['vehicle_info'],  subpath_result['traffic_cond'], subpath_result['path'])
                         self._subpath_batch.append(subpath_vector)
 
-                    #     if(i == num_of_steps - 1):
-                    #         path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][0][u'path']
-                    #         break
-                    #     path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][0][u'path'] + ';'
-
-                    # result['path'] = path_string
-
                     print('From {origin_lat},{origin_lng}(region: {origin_city}) to {destination_lat},{destination_lng}(region: {destination_city}) parse succeed: duration: {duration_s}, distance: {distance_km}'.format(**result))
 
                     result_vector = (result['id'], result['origin_lat'], result['origin_lng'], result['destination_lat'], result['destination_lng'], result['origin_city'], result['destination_city'], result['duration_s'], result['distance_km'], result['price_yuan'])
@@ -598,4 +591,123 @@ class AMapTransitParserThread(threading.Thread):
                         '{od_id},{origin_lat},{origin_lng},{destination_lat},{destination_lng},{origin_city},{des_city}\n'.format(**path_info))
                     print('Parse path {} failed!'.format(
                         path_info['od_id']))
+                    print(parser_error)
+
+
+# 百度-公交模式1.0解析线程
+class BaiduTransitFirstVersionParserThread(threading.Thread):
+    """Transit path data parser thread.
+
+    Parse the transit path data.
+    """
+
+    def __init__(self, **parser_args):
+        threading.Thread.__init__(self)
+        self._thread_id = parser_args['thread_id']
+        self._path_queue = parser_args['path_queue']
+        self._db_name = parser_args['db_name']
+        self._error_file = parser_args['error_file']
+        self._error_lock = parser_args['error_lock']
+        self._data_batch = parser_args['data_batch']
+
+    def run(self):
+        print('No.{} parser start...'.format(self._thread_id))
+        self.__data_parser()
+        print('No.{} parser finished!'.format(self._thread_id))
+
+    # 解析路径、时间、距离
+    def __data_parser(self):
+        """Parser of transit json data.
+
+        Parse the transit data.
+        """
+
+        while not PARSER_EXIT_FLAG:
+
+            try:
+                path_info = self._path_queue.get(True, 20)
+
+                timeout = 2
+                while(timeout > 0):
+                    timeout -= 1
+
+                    result = {}
+                    result['id'] = path_info['route_id']
+                    result['origin_lat'] = path_info['origin_lat']
+                    result['origin_lng'] = path_info['origin_lng']
+                    result['destination_lat'] = path_info['destination_lat']
+                    result['destination_lng'] = path_info['destination_lng']
+                    result['origin'] = path_info['origin']
+                    result['destination'] = path_info['destination']
+                    result['origin_region'] = path_info['origin_region']
+                    result['destination_region'] = path_info['destination_region']
+                    result['duration'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'duration']
+                    result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'distance'] / 1000
+                    result['price'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'price']
+
+                    # # 解析路径
+                    # num_of_steps = len(
+                    #     path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'steps'])
+                    # # path_string = ''
+                    # # for i in range(num_of_steps):
+                    # #     if(i == num_of_steps - 1):
+                    # #         path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
+                    # #         break
+                    # #     path_string += path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path'] + ';'
+                    # # result['path'] = path_string
+
+                    # for i in range(num_of_steps):
+                    #     subresult = {}
+
+                    #     subresult['route_id'] = result['id']
+                    #     subresult['step_num'] = i + 1
+                    #     subresult['start_lat'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'stepOriginLocation'][u'lat']
+                    #     subresult['start_lng'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'stepOriginLocation'][u'lng']
+                    #     subresult['end_lat'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'stepDestinationLocation'][u'lat']
+                    #     subresult['end_lng'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'stepDestinationLocation'][u'lng']
+                    #     subresult['sub_s'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'duration']
+                    #     subresult['sub_km'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'distance'] / 1000
+                    #     subresult['area'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'area']
+                    #     subresult['traffic_status'] = path_info['path_json'][u'result'][
+                    #         u'routes'][0][u'steps'][i][u'traffic_condition_detail'][0][u'status']
+                    #     subresult['geo_cnt'] = path_info['path_json'][u'result'][u'routes'][
+                    #         0][u'steps'][i][u'traffic_condition_detail'][0][u'geo_cnt']
+                    #     subresult['path'] = path_info['path_json'][u'result'][u'routes'][0][u'steps'][i][u'path']
+
+                    #     subpath_vector = (
+                    #         subresult['route_id'], subresult['step_num'], subresult['start_lat'], subresult['start_lng'], subresult['end_lat'], subresult['end_lng'], subresult['sub_s'], subresult['sub_km'], subresult['area'],  subresult['traffic_status'], subresult['geo_cnt'], subresult['path'])
+                    #     self._subpath_batch.append(subpath_vector)
+
+                    print('From {origin}#{origin_lat},{origin_lng}(region: {origin_region}) to {destination}#{destination_lat},{destination_lng}(region: {destination_region}) parse succeed: duration: {duration}, distance: {distance_km}, price:{price}'.format(
+                        **result))
+
+                    result_vector = (result['id'], result['origin_lat'], result['origin_lng'], result['destination_lat'], result['destination_lng'], result['origin'],
+                                     result['destination'], result['origin_region'], result['destination_region'], result['duration'], result['distance_km'], result['price'])
+                    self._data_batch.append(result_vector)
+
+                    if(len(self._data_batch) == 50):
+                        path_data_db = sqlite3.connect(self._db_name)
+                        # subpath_db = sqlite3.connect(self._subpathdb_name)
+
+                        with path_data_db:
+
+                            path_data_db.executemany(
+                                'insert into path_data values (?,?,?,?,?,?,?,?,?,?,?,?)', self._data_batch)
+                            path_data_db.commit()
+                            self._data_batch[:] = []
+
+                            # path_data_db.executemany(
+                            #     'insert into subpath values (?,?,?,?,?,?,?,?,?,?,?,?)', self._subpath_batch)
+                            # path_data_db.commit()
+                            # self._subpath_batch[:] = []
+
+                    self._path_queue.task_done()
+                    break
+
+            except Exception as parser_error:
+                with self._error_lock:
+                    self._error_file.write(
+                        '{route_id},{origin_lat},{origin_lng},{destination_lat},{destination_lng},{origin},{destination},{origin_region},{destination_region}\n'.format(**path_info))
+                    print('Parse path {} failed!'.format(
+                        path_info['route_id']))
                     print(parser_error)
