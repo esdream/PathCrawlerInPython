@@ -104,7 +104,7 @@ class BaiduDrivingCrawlerThread(threading.Thread):
                             path_info['path_json'] = requests.get(
                                 url, timeout=5).json()
                             self._path_queue.put(path_info)
-                            print('path {0[0]}: From {0[1]}{0[2]}(region {0[7]}) to {0[3]}{0[4]}(region {0[8]}) crawl succeed.'.format(
+                            print('path {0[0]}: From {0[1]},{0[2]}(region {0[7]}) to {0[3]},{0[4]}(region {0[8]}) crawl succeed.'.format(
                                 city_coms_data))
                             break
                         except Exception as crawl_error:
@@ -513,9 +513,9 @@ class BaiduTransitFirstVersionCrawlerThread(threading.Thread):
                 # 选择使用经纬度抓取
                 elif(str(self._crawl_parameter['coord_or_name']) == '2'):
                     city_coms_data = self._od_queue.get()
-                    print('path {0[0]}: From {0[1]}{0[2]}(region {0[7]}) to {0[3]}{0[4]}(region {0[8]}) crawled...'.format(
+                    print('path {0[0]}: From {0[1]},{0[2]}(region {0[7]}) to {0[3]},{0[4]}(region {0[8]}) crawled...'.format(
                         city_coms_data))
-                    url = 'http://api.map.baidu.com/direction/v1?mode=driving&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[7]}&output=json&ak={key}'.format(
+                    url = 'http://api.map.baidu.com/direction/v1?mode=transit&origin={0[1]},{0[2]}&destination={0[3]},{0[4]}&region={0[7]}&output=json&ak={key}'.format(
                         city_coms_data, **self._crawl_parameter)
 
                     timeout = 2

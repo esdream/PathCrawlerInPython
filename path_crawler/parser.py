@@ -641,7 +641,7 @@ class BaiduTransitFirstVersionParserThread(threading.Thread):
                     result['destination'] = path_info['destination']
                     result['origin_region'] = path_info['origin_region']
                     result['destination_region'] = path_info['destination_region']
-                    result['duration'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'duraion']
+                    result['duration'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'duration']
                     result['distance_km'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'distance'] / 1000
                     result['price'] = path_info['path_json'][u'result'][u'routes'][0][u'scheme'][0][u'price']
 
