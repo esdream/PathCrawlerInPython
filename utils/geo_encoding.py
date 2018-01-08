@@ -13,13 +13,13 @@ def baidu_address_to_coord(encoding_param):
     """
 
     address_file = global_settings.GEO_ENCODING_URL + encoding_param['input_file'] + '.csv'
-    coord_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_coord' + '.csv'
+    coord_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '.csv'
     crawl_error_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_crawl_error' + '.csv'
     parse_error_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_parse_error' + '.csv'
 
     with open(address_file, mode='r', encoding='utf-8') as f_address_file, open(coord_file, mode='w', encoding='utf-8') as f_coord_file, open(crawl_error_file, mode='w', encoding='utf-8') as f_crawl_error, open(parse_error_file, mode='w', encoding='utf-8') as f_parse_error:
         
-        f_coord_file.write('id,address,city,lat,lng\n')
+        f_coord_file.write('id,address,city,lat,lng,level\n')
         f_parse_error.write('id,address,city\n')
         f_crawl_error.write('id,address,city\n')
 
@@ -31,8 +31,8 @@ def baidu_address_to_coord(encoding_param):
         
         for address in addresses:
 
-            url = 'http://api.map.baidu.com/geocoder/v2/?address={0}&city={1}&output=json&ak={2}'.format(
-                address[1], address[2], encoding_param['key'])
+            url = 'http://api.map.baidu.com/geocoder/v2/?address={0}&city={1}&output=json&ak={2}&ret_coordtype={3}'.format(
+                address[1], address[2], encoding_param['key'], encoding_param['ret_coordtype'])
 
             crawl_timeout = 2
             while(crawl_timeout > 0):
@@ -62,10 +62,11 @@ def baidu_address_to_coord(encoding_param):
                     parse_timeout -= 1
                     lat = response[u'result'][u'location'][u'lat']
                     lng = response[u'result'][u'location'][u'lng']
+                    level = response[u'result'][u'level']
                     f_coord_file.write(
-                        '{0[0]},{0[1]},{0[2]},{1},{2}\n'.format(address, lat, lng))
-                    print('Geocode {0}(city{1}) succeed: {2}, {3}'.format(
-                        address[1], address[2], lat, lng))
+                        '{0[0]},{0[1]},{0[2]},{1},{2},{3}\n'.format(address, lat, lng, level))
+                    print('Geocode {0}(city{1}) succeed: {2}, {3}, {4}'.format(
+                        address[1], address[2], lat, lng, level))
                     break
             except Exception as parse_error:
                 print('parse {0}(city{1}) error!'.format(
@@ -83,7 +84,7 @@ def amap_address_to_coord(encoding_param):
     """
 
     address_file = global_settings.GEO_ENCODING_URL + encoding_param['input_file'] + '.csv'
-    coord_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_coord' + '.csv'
+    coord_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '.csv'
     crawl_error_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_crawl_error' + '.csv'
     parse_error_file = global_settings.GEO_ENCODING_URL + encoding_param['output_file'] + '_parse_error' + '.csv'
 
@@ -141,13 +142,22 @@ def main():
     api_name = input('请选择地理编码平台（1 Baidu Map；2 AMap）：')
     if(str(api_name) == '1'):
         encoding_type = input('请选择地理编码方式（默认为1。1 地址转坐标；2 坐标转地址）：')
-        
+        ret_coordtype = input('请输入返回的坐标系（ 默认为1\n\
+            1 bd09ll（百度经纬度坐标）；\n\
+            2 gcj02ll（国测局坐标）；\n\
+            3 bd09mc（百度墨卡托米制坐标））: ')
+        coordtype = {
+            '1': 'bd09ll',
+            '2': 'gcj02ll',
+            '3': 'bd09mc'
+        }
         if(str(encoding_type) == '1'):
             key = input('请输入百度地图开发者密钥：')
             encoding_param = {
                 'input_file': input_file,
                 'output_file': output_file,
-                'key': key
+                'key': key,
+                'ret_coordtype': coordtype[str(ret_coordtype)] or 'bd09ll'
             }
             baidu_address_to_coord(encoding_param)
 
