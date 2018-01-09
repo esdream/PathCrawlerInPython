@@ -120,16 +120,24 @@ def amap_address_to_coord(encoding_param):
             try:
                 parse_timeout = 2
                 while(parse_timeout > 0):
-
                     parse_timeout -= 1
-                    location = response[u'geocodes'][0][u'location']
-                    lng, lat = location.split(',')
-                    level = response[u'geocodes'][0][u'level']
-                    f_coord_file.write(
-                        '{0[0]},{0[1]},{0[2]},{1},{2},{3}\n'.format(address, lat, lng, level))
-                    print('Geocode {0}(city{1}) succeed: {2}, {3}'.format(
-                        address[1], address[2], lat, lng))
-                    break
+
+                    # 如果response中的adcode和本地的adcode相等，则记录。否则记为错误
+                    if(str(response[u'geocodes'][0][u'adcode']) == str(address[2])):
+                        location = response[u'geocodes'][0][u'location']
+                        lng, lat = location.split(',')
+                        level = response[u'geocodes'][0][u'level']
+                        f_coord_file.write(
+                            '{0[0]},{0[1]},{0[2]},{1},{2},{3}\n'.format(address, lat, lng, level))
+                        print('Geocode {0}(city{1}) succeed: {2}, {3}'.format(
+                            address[1], address[2], lat, lng))
+                        break
+                
+                    else:
+                        f_parse_error.write(
+                            '{0[0]},{0[1]},{0[2]}\n'.format(address))
+                        break
+
             except Exception as parse_error:
                 print('parse {0}(city{1}) error!'.format(
                     address[1], address[2]))
