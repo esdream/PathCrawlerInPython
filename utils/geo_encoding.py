@@ -90,9 +90,10 @@ def amap_address_to_coord(encoding_param):
 
     with open(address_file, mode='r', encoding='utf-8') as f_address_file, open(coord_file, mode='w', encoding='utf-8') as f_coord_file, open(crawl_error_file, mode='w', encoding='utf-8') as f_crawl_error, open(parse_error_file, mode='w', encoding='utf-8') as f_parse_error:
         
-        f_coord_file.write('id,address,city,lat,lng,level\n')
-        f_parse_error.write('id,address,city\n')
-        f_crawl_error.write('id,address,city\n')
+        f_coord_file.write(
+            'id,address,city,amap_province,amap_city,amap_district,lat,lng,level\n')
+        f_parse_error.write('id,address\n')
+        f_crawl_error.write('id,address\n')
 
         address_csv = csv.reader(f_address_file)
         next(address_csv)
@@ -101,7 +102,7 @@ def amap_address_to_coord(encoding_param):
             addresses.append(row)
         
         for address in addresses:
-            url = 'http://restapi.amap.com/v3/geocode/geo?key={key}&address={0[1]}&city={0[2]}'.format(address, **encoding_param)
+            url = 'http://restapi.amap.com/v3/geocode/geo?key={key}&address={0[1]}'.format(address, **encoding_param)
 
             crawl_timeout = 2
             while(crawl_timeout > 0):
@@ -112,10 +113,10 @@ def amap_address_to_coord(encoding_param):
                 except Exception as crawl_error:
                     if(crawl_timeout == 0):
                         print('crawl {0}(city{1}) error!'.format(
-                            address[1], address[2]))
+                            address[0], address[1]))
                         print(crawl_error)
                         f_crawl_error.write(
-                            '{0[0]},{0[1]},{0[2]}\n'.format(address))
+                            '{0[0]},{0[1]}\n'.format(address))
                             
             try:
                 parse_timeout = 2
@@ -123,33 +124,36 @@ def amap_address_to_coord(encoding_param):
                     parse_timeout -= 1
 
                     # 如果response中的adcode和本地的adcode相等，则记录。否则记为错误
-                    if(str(response[u'geocodes'][0][u'adcode']) == str(address[2])):
-                        location = response[u'geocodes'][0][u'location']
-                        lng, lat = location.split(',')
-                        level = response[u'geocodes'][0][u'level']
-                        f_coord_file.write(
-                            '{0[0]},{0[1]},{0[2]},{1},{2},{3}\n'.format(address, lat, lng, level))
-                        print('Geocode {0}(city{1}) succeed: {2}, {3}'.format(
-                            address[1], address[2], lat, lng))
-                        break
+                    # if(str(response[u'geocodes'][0][u'adcode']) == str(address[2])):
+                    amap_province = response[u'geocodes'][0][u'province']
+                    amap_city = response[u'geocodes'][0][u'city']
+                    amap_district = response[u'geocodes'][0][u'district']
+                    location = response[u'geocodes'][0][u'location']
+                    lng, lat = location.split(',')
+                    level = response[u'geocodes'][0][u'level']
+                    f_coord_file.write(
+                        '{0[0]},{0[1]},{1},{2},{3},{4},{5},{6}\n'.format(address, amap_province, amap_city, amap_district, lat, lng, level))
+                    print('Geocode {0}(city{1}) succeed: {2}, {3}'.format(
+                        address[0], address[1], lat, lng))
+                    break
                 
-                    else:
-                        f_parse_error.write(
-                            '{0[0]},{0[1]},{0[2]}\n'.format(address))
-                        break
+                    # else:
+                    #     f_parse_error.write(
+                    #         '{0[0]},{0[1]},{0[2]}\n'.format(address))
+                    #     break
 
             except Exception as parse_error:
                 print('parse {0}(city{1}) error!'.format(
-                    address[1], address[2]))
+                    address[0], address[1]))
                 print(parse_error)
-                f_parse_error.write('{0[0]},{0[1]},{0[2]}\n'.format(address))
-    
+                f_parse_error.write('{0[0]},{0[1]}\n'.format(address))
+
 def main():
     input_file = input('请输入进行地理编码的文件（不需要输入文件类型）：')
     output_file = input('请输入输出文件名（不需要输入文件类型）：')
     api_name = input('请选择地理编码平台（1 Baidu Map；2 AMap）：')
     if(str(api_name) == '1'):
-        encoding_type = input('请选择地理编码方式（默认为1。1 地址转坐标；2 坐标转地址）：')
+        encoding_type = input('请选择地理编码方式（默认为1。1 地址转坐标；2 坐标转地址；3 查询）：')
         ret_coordtype = input('请输入返回的坐标系（ 默认为1\n\
             1 bd09ll（百度经纬度坐标）；\n\
             2 gcj02ll（国测局坐标）；\n\
@@ -170,7 +174,7 @@ def main():
             baidu_address_to_coord(encoding_param)
 
     elif(str(api_name) == '2'):
-        encoding_type = input('请选择地理编码方式（默认为1。1 地址转坐标；2 坐标转地址）：')
+        encoding_type = input('请选择地理编码方式（默认为1。1 地址转坐标；2 坐标转地址；3 查询）：')
         if(str(encoding_type) == '1'):
             key = input('请输入高德地图开发者密钥：')
             encoding_param = {
@@ -179,7 +183,6 @@ def main():
                 'key': key
             }
             amap_address_to_coord(encoding_param)
-
 
 if(__name__ == '__main__'):
     main()
